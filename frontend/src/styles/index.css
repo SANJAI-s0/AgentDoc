@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #13263a;
+  font-family: Aptos, "Trebuchet MS", sans-serif;
+  background: radial-gradient(circle at 8% 0%, rgba(15, 110, 168, 0.12), transparent 34%),
+    radial-gradient(circle at 95% 0%, rgba(209, 141, 36, 0.12), transparent 30%),
+    linear-gradient(180deg, #f7f4ee, #eef4f8);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.react-pdf__Page__canvas {
+  max-width: 100%;
+  height: auto !important;
+}
