@@ -1,0 +1,64 @@
+{
+  "family": "agentdoc-backend",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::<account-id>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<account-id>:role/agentdocTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "<account-id>.dkr.ecr.<region>.amazonaws.com/agentdoc-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+      ],
+      "environment": [
+        { "name": "DJANGO_DEBUG", "value": "0" },
+        { "name": "DJANGO_ALLOWED_HOSTS", "value": "<api-domain>,<alb-domain>" },
+        { "name": "DJANGO_CORS_ALLOWED_ORIGINS", "value": "https://<frontend-domain>" },
+        { "name": "DJANGO_CSRF_TRUSTED_ORIGINS", "value": "https://<frontend-domain>" },
+        { "name": "DJANGO_USE_X_FORWARDED_HOST", "value": "1" },
+        { "name": "DJANGO_TRUST_X_FORWARDED_PROTO", "value": "1" },
+        { "name": "DJANGO_SESSION_COOKIE_SECURE", "value": "1" },
+        { "name": "DJANGO_CSRF_COOKIE_SECURE", "value": "1" },
+        { "name": "MONGODB_URI", "value": "mongodb+srv://<...>" },
+        { "name": "MONGODB_DB_NAME", "value": "agentdoc" },
+        { "name": "MONGODB_VECTOR_INDEX", "value": "documents_vector_index" },
+        { "name": "MONGODB_ENABLE_VECTOR_SEARCH", "value": "1" },
+        { "name": "EMBEDDING_VECTOR_DIMENSIONS", "value": "165" },
+        { "name": "MINIO_ENDPOINT", "value": "<minio-endpoint>:443" },
+        { "name": "MINIO_BUCKET", "value": "documents" },
+        { "name": "MINIO_SECURE", "value": "1" },
+        { "name": "GEMINI_MODEL", "value": "gemini/gemini-2.5-flash" },
+        { "name": "SMTP_HOST", "value": "email-smtp.<region>.amazonaws.com" },
+        { "name": "SMTP_PORT", "value": "587" },
+        { "name": "REVIEW_PORTAL_URL", "value": "https://<frontend-domain>/reviews" }
+      ],
+      "secrets": [
+        { "name": "DJANGO_SECRET_KEY", "valueFrom": "arn:aws:ssm:<region>:<account-id>:parameter/agentdoc/DJANGO_SECRET_KEY" },
+        { "name": "MINIO_ACCESS_KEY", "valueFrom": "arn:aws:ssm:<region>:<account-id>:parameter/agentdoc/MINIO_ACCESS_KEY" },
+        { "name": "MINIO_SECRET_KEY", "valueFrom": "arn:aws:ssm:<region>:<account-id>:parameter/agentdoc/MINIO_SECRET_KEY" },
+        { "name": "GEMINI_API_KEY", "valueFrom": "arn:aws:ssm:<region>:<account-id>:parameter/agentdoc/GEMINI_API_KEY" },
+        { "name": "AGENT_INTERNAL_TOKEN", "valueFrom": "arn:aws:ssm:<region>:<account-id>:parameter/agentdoc/AGENT_INTERNAL_TOKEN" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/agentdoc-backend",
+          "awslogs-region": "<region>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
