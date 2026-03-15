@@ -1,0 +1,78 @@
+services:
+  - type: web
+    name: agentdoc-backend
+    env: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash -lc "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DJANGO_USE_X_FORWARDED_HOST
+        value: "1"
+      - key: DJANGO_TRUST_X_FORWARDED_PROTO
+        value: "1"
+      - key: DJANGO_SESSION_COOKIE_SECURE
+        value: "1"
+      - key: DJANGO_CSRF_COOKIE_SECURE
+        value: "1"
+      - key: DJANGO_CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: agentdoc
+      - key: MONGODB_VECTOR_INDEX
+        value: documents_vector_index
+      - key: MONGODB_ENABLE_VECTOR_SEARCH
+        value: "1"
+      - key: EMBEDDING_VECTOR_DIMENSIONS
+        value: "165"
+      - key: MINIO_ENDPOINT
+        sync: false
+      - key: MINIO_ACCESS_KEY
+        sync: false
+      - key: MINIO_SECRET_KEY
+        sync: false
+      - key: MINIO_BUCKET
+        value: documents
+      - key: MINIO_SECURE
+        value: "1"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini/gemini-2.5-flash
+      - key: DEFAULT_FROM_EMAIL
+        value: ops@agentdoc.local
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: REVIEW_PORTAL_URL
+        sync: false
+      - key: AGENT_INTERNAL_TOKEN
+        sync: false
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+
+  - type: static
+    name: agentdoc-frontend
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+

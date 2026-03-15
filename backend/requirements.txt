@@ -1,0 +1,26 @@
+﻿# Core API
+Django==5.1.5
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.3.1
+django-cors-headers==4.6.0
+
+# Data + storage
+pymongo[srv]==4.10.1
+minio==7.2.15
+
+# Agent orchestration + schema modeling
+crewai==0.108.0
+sentence-transformers==3.4.1
+pydantic==2.10.6
+python-dotenv==1.0.1
+
+# OCR and image processing
+numpy==1.26.4
+Pillow==11.1.0
+pytesseract==0.3.13
+opencv-python-headless==4.10.0.84
+paddleocr==2.8.1
+
+# Parsing + app server
+pypdf==5.1.0
+gunicorn==22.0.0
