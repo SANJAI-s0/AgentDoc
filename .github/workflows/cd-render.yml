@@ -1,0 +1,46 @@
+﻿name: CD Render
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-render:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+    if: >-
+      ((github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) &&
+      secrets.RENDER_BACKEND_DEPLOY_HOOK != '' &&
+      secrets.RENDER_FRONTEND_DEPLOY_HOOK != ''
+
+    steps:
+      - name: Trigger backend deploy
+        run: curl -fsS -X POST "$RENDER_BACKEND_DEPLOY_HOOK"
+        env:
+          RENDER_BACKEND_DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
+
+      - name: Trigger frontend deploy
+        run: curl -fsS -X POST "$RENDER_FRONTEND_DEPLOY_HOOK"
+        env:
+          RENDER_FRONTEND_DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
+
+  missing-render-secrets:
+    name: Render Secrets Missing
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      (secrets.RENDER_BACKEND_DEPLOY_HOOK == '' || secrets.RENDER_FRONTEND_DEPLOY_HOOK == '')
+
+    steps:
+      - name: Fail with setup instructions
+        run: |
+          echo "RENDER_BACKEND_DEPLOY_HOOK and RENDER_FRONTEND_DEPLOY_HOOK secrets are required."
+          exit 1

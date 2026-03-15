@@ -1,0 +1,123 @@
+﻿name: CD AWS ECS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cd-aws-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-aws-ecs:
+    name: Build and Deploy to ECS
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+      ECS_BACKEND_SERVICE: ${{ vars.ECS_BACKEND_SERVICE }}
+      ECS_FRONTEND_SERVICE: ${{ vars.ECS_FRONTEND_SERVICE }}
+      ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+      ECR_FRONTEND_REPOSITORY: ${{ vars.ECR_FRONTEND_REPOSITORY }}
+      VITE_API_BASE: ${{ vars.VITE_API_BASE }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+    steps:
+      - name: Validate required variables and secrets
+        run: |
+          missing=()
+          for key in AWS_REGION ECS_CLUSTER ECS_BACKEND_SERVICE ECS_FRONTEND_SERVICE ECR_BACKEND_REPOSITORY ECR_FRONTEND_REPOSITORY; do
+            if [ -z "${!key}" ]; then
+              missing+=("$key")
+            fi
+          done
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing required repository variables: ${missing[*]}"
+            exit 1
+          fi
+
+          if [ -z "$AWS_ROLE_TO_ASSUME" ]; then
+            echo "::error::Missing required secret: AWS_ROLE_TO_ASSUME"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute image tags
+        id: image-meta
+        run: |
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          echo "backend_image=${REGISTRY}/${ECR_BACKEND_REPOSITORY}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${REGISTRY}/${ECR_FRONTEND_REPOSITORY}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push backend image
+        run: |
+          docker build -f backend/Dockerfile.prod -t "${{ steps.image-meta.outputs.backend_image }}" backend
+          docker push "${{ steps.image-meta.outputs.backend_image }}"
+
+      - name: Build and push frontend image
+        run: |
+          API_BASE="${VITE_API_BASE:-/api}"
+          docker build -f frontend/Dockerfile.prod --build-arg VITE_API_BASE="$API_BASE" -t "${{ steps.image-meta.outputs.frontend_image }}" frontend
+          docker push "${{ steps.image-meta.outputs.frontend_image }}"
+
+      - name: Prepare ECS task definitions from templates
+        run: |
+          mkdir -p .github/.tmp
+          ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+
+          cp deploy/aws/ecs/backend-taskdef.json .github/.tmp/backend-taskdef.json
+          cp deploy/aws/ecs/frontend-taskdef.json .github/.tmp/frontend-taskdef.json
+
+          sed -i "s|<account-id>|${ACCOUNT_ID}|g" .github/.tmp/backend-taskdef.json
+          sed -i "s|<region>|${AWS_REGION}|g" .github/.tmp/backend-taskdef.json
+          sed -i "s|<account-id>|${ACCOUNT_ID}|g" .github/.tmp/frontend-taskdef.json
+          sed -i "s|<region>|${AWS_REGION}|g" .github/.tmp/frontend-taskdef.json
+
+      - name: Inject backend image into task definition
+        id: backend-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .github/.tmp/backend-taskdef.json
+          container-name: backend
+          image: ${{ steps.image-meta.outputs.backend_image }}
+
+      - name: Deploy backend service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.backend-task.outputs.task-definition }}
+          service: ${{ vars.ECS_BACKEND_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Inject frontend image into task definition
+        id: frontend-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .github/.tmp/frontend-taskdef.json
+          container-name: frontend
+          image: ${{ steps.image-meta.outputs.frontend_image }}
+
+      - name: Deploy frontend service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.frontend-task.outputs.task-definition }}
+          service: ${{ vars.ECS_FRONTEND_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
