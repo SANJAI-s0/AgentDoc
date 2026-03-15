@@ -1,0 +1,19 @@
+﻿FRESHMART SUPERSTORE
+Retail Receipt
+Store ID: FM-CH-22
+Receipt Number: RCPT-889214
+Date: 2026-03-10
+Time: 18:42
+Cashier: Priya N
+Customer: Walk-in
+Items:
+1. Rice 5kg - 420.00
+2. Milk 2L - 110.00
+3. Bread - 45.00
+4. Eggs 12pcs - 96.00
+Subtotal: 671.00
+Discount: 21.00
+Tax: 33.50
+Grand Total: 683.50
+Payment Method: UPI
+Transaction ID: UPI7845120061

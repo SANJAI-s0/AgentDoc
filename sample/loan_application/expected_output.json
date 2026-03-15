@@ -1,0 +1,26 @@
+﻿{
+  "document_type": "loan_application",
+  "expected_fields": {
+    "application_number": "LOAN-2026-2204",
+    "applicant_name": "Maya Raghavan",
+    "date_of_birth": "1991-11-05",
+    "phone_number": "+91-9123456780",
+    "email": "maya.raghavan@example.com",
+    "residential_address": "7 Green Park Street, Coimbatore, Tamil Nadu 641018",
+    "employment_type": "Salaried",
+    "employer_name": "BrightGrid Technologies Pvt Ltd",
+    "monthly_income": "95000",
+    "requested_loan_amount": "500000",
+    "requested_tenure_months": "36",
+    "existing_emi_obligations": "12000",
+    "credit_score_declared": "742",
+    "bank_account_number": "884401229955",
+    "ifsc_code": "HDFC0002210",
+    "purpose_of_loan": "Home renovation"
+  },
+  "validation_expectations": [
+    "monthly income should support the requested amount",
+    "credit score below policy threshold should trigger review",
+    "bank account and IFSC code should both be extracted"
+  ]
+}

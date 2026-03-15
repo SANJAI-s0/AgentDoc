@@ -1,0 +1,23 @@
+﻿{
+  "document_type": "kyc_form",
+  "expected_fields": {
+    "application_id": "KYC-2026-5521",
+    "full_name": "Sam Taylor",
+    "date_of_birth": "1994-08-17",
+    "phone_number": "+91-9876543210",
+    "email_address": "sam.taylor@example.com",
+    "government_id_type": "Aadhaar",
+    "government_id_number": "4981 5521 7790",
+    "current_address": "24 Lake View Road, Chennai, Tamil Nadu 600028",
+    "occupation": "Software Engineer",
+    "annual_income_range": "800000 to 1200000",
+    "purpose_of_account": "Savings and bill payments",
+    "documents_submitted": "Address proof and identity proof",
+    "signature_present": "Yes"
+  },
+  "validation_expectations": [
+    "name and address should be complete",
+    "government ID type and number should both be present",
+    "missing signature should trigger manual review if absent"
+  ]
+}

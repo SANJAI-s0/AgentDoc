@@ -1,0 +1,25 @@
+﻿{
+  "document_type": "insurance_claim",
+  "expected_fields": {
+    "claim_number": "CLM-2026-9918",
+    "policy_number": "POL-77820114",
+    "insured_name": "Arjun Mehta",
+    "incident_date": "2026-02-26",
+    "claim_submission_date": "2026-03-01",
+    "claim_type": "Motor damage",
+    "vehicle_number": "TN09AB2211",
+    "loss_description": "Rear bumper and tail light damaged in a parking collision.",
+    "repair_estimate": "18500.00",
+    "garage_name": "City Auto Works",
+    "hospitalization_required": "No",
+    "police_complaint_filed": "Yes",
+    "police_complaint_number": "FIR-2026-1804",
+    "claimed_amount": "18500.00",
+    "contact_number": "+91-9988776655"
+  },
+  "validation_expectations": [
+    "claim amount should align with the repair estimate",
+    "motor claims with police complaint should capture FIR number",
+    "missing incident date should trigger exception handling"
+  ]
+}

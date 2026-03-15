@@ -1,0 +1,15 @@
+﻿ACME POWER SERVICES
+TAX INVOICE
+Invoice Number: INV-2026-1048
+Invoice Date: 2026-03-12
+Customer Name: Sam Taylor
+Customer ID: CUST-1001
+Billing Address: 24 Lake View Road, Chennai, Tamil Nadu 600028
+Service Period: 2026-02-01 to 2026-02-29
+Meter Number: MTR-884102
+Units Consumed: 412
+Subtotal: 2240.00
+Tax: 210.00
+Total Amount Due: 2450.00
+Due Date: 2026-03-20
+Payment Status: Unpaid

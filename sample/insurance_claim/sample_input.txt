@@ -1,0 +1,16 @@
+﻿INSURANCE CLAIM FORM
+Claim Number: CLM-2026-9918
+Policy Number: POL-77820114
+Insured Name: Arjun Mehta
+Incident Date: 2026-02-26
+Claim Submission Date: 2026-03-01
+Claim Type: Motor damage
+Vehicle Number: TN09AB2211
+Loss Description: Rear bumper and tail light damaged in a parking collision.
+Repair Estimate: 18500.00
+Garage Name: City Auto Works
+Hospitalization Required: No
+Police Complaint Filed: Yes
+Police Complaint Number: FIR-2026-1804
+Claimed Amount: 18500.00
+Contact Number: +91-9988776655

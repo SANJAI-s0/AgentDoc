@@ -1,0 +1,14 @@
+﻿KYC CUSTOMER INFORMATION FORM
+Application ID: KYC-2026-5521
+Full Name: Sam Taylor
+Date of Birth: 1994-08-17
+Phone Number: +91-9876543210
+Email Address: sam.taylor@example.com
+Government ID Type: Aadhaar
+Government ID Number: 4981 5521 7790
+Current Address: 24 Lake View Road, Chennai, Tamil Nadu 600028
+Occupation: Software Engineer
+Annual Income Range: 800000 to 1200000
+Purpose of Account: Savings and bill payments
+Document Submitted: Address proof and identity proof
+Signature Present: Yes

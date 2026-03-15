@@ -1,0 +1,17 @@
+﻿PERSONAL LOAN APPLICATION
+Application Number: LOAN-2026-2204
+Applicant Name: Maya Raghavan
+Date of Birth: 1991-11-05
+Phone Number: +91-9123456780
+Email: maya.raghavan@example.com
+Residential Address: 7 Green Park Street, Coimbatore, Tamil Nadu 641018
+Employment Type: Salaried
+Employer Name: BrightGrid Technologies Pvt Ltd
+Monthly Income: 95000
+Requested Loan Amount: 500000
+Requested Tenure Months: 36
+Existing EMI Obligations: 12000
+Credit Score Declared: 742
+Bank Account Number: 884401229955
+IFSC Code: HDFC0002210
+Purpose of Loan: Home renovation

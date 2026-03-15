@@ -1,0 +1,11 @@
+{
+  "document_type": "handwritten_form",
+  "fields": {
+    "name": "Sam Turner",
+    "phone": "555-982-1880",
+    "address": "152 Oak Street, Springfield",
+    "request": "Correct account mailing address",
+    "date": "2026-03-15"
+  },
+  "expected_status": "pending_review"
+}

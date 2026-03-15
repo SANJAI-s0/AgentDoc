@@ -1,0 +1,8 @@
+Document Type: Shipping Document
+Bill of Lading Number: BL-7782-2026
+Shipper: Eastport Retail Supplies
+Consignee: BrightMart Stores
+Origin: Chennai Port
+Destination: Los Angeles Port
+Declared Value: 15800.00 USD
+Date: 2026-03-15

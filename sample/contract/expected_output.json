@@ -1,0 +1,13 @@
+{
+  "document_type": "contract",
+  "fields": {
+    "contract_id": "CTR-4492",
+    "party_a": "Northline Services",
+    "party_b": "GreenField Homes",
+    "effective_date": "2026-03-01",
+    "termination_date": "2027-03-01",
+    "payment_terms": "Net 30",
+    "jurisdiction": "California"
+  },
+  "expected_status": "completed"
+}

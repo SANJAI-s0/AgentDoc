@@ -1,0 +1,23 @@
+﻿{
+  "document_type": "invoice",
+  "expected_fields": {
+    "invoice_number": "INV-2026-1048",
+    "invoice_date": "2026-03-12",
+    "customer_name": "Sam Taylor",
+    "customer_id": "CUST-1001",
+    "billing_address": "24 Lake View Road, Chennai, Tamil Nadu 600028",
+    "service_period": "2026-02-01 to 2026-02-29",
+    "meter_number": "MTR-884102",
+    "units_consumed": "412",
+    "subtotal": "2240.00",
+    "tax": "210.00",
+    "total_amount": "2450.00",
+    "due_date": "2026-03-20",
+    "payment_status": "Unpaid"
+  },
+  "validation_expectations": [
+    "total_amount should equal subtotal plus tax",
+    "invoice should be marked payable because payment status is unpaid",
+    "customer identity should match an existing user profile if available"
+  ]
+}

@@ -1,0 +1,146 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1380" viewBox="0 0 1600 1380" role="img" aria-labelledby="title desc">
+  <title id="title">Agentic AI Document Intelligence Architecture</title>
+  <desc id="desc">Presentation-style light architecture with UI flow, backend flow, full stack flow, and agent flow, including component badges and color legend.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fbf7ef"/>
+      <stop offset="100%" stop-color="#efe2ca"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fffdf8"/>
+      <stop offset="100%" stop-color="#fff6ea"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#6a5a45" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1c3125"/>
+    </marker>
+    <style>
+      .title { font: 700 34px Arial, sans-serif; fill: #173225; }
+      .subtitle { font: 400 18px Arial, sans-serif; fill: #57675d; }
+      .panel { fill: url(#panel); stroke: #d8c8b1; stroke-width: 2; rx: 26; filter: url(#shadow); }
+      .panelTitle { font: 700 24px Arial, sans-serif; fill: #173225; }
+      .panelText { font: 400 14px Arial, sans-serif; fill: #5d6c63; }
+      .node { fill: #fff; stroke: #536f61; stroke-width: 2; rx: 18; }
+      .nodeReact { fill: #eefaff; stroke: #1696b6; stroke-width: 2; rx: 18; }
+      .nodeDjango { fill: #edf6ef; stroke: #0c4b33; stroke-width: 2; rx: 18; }
+      .nodeCrew { fill: #eef2ff; stroke: #4564f2; stroke-width: 2; rx: 18; }
+      .nodeGemini { fill: #eef4ff; stroke: #4285f4; stroke-width: 2; rx: 18; }
+      .nodeMongo { fill: #eefaf1; stroke: #47a248; stroke-width: 2; rx: 18; }
+      .nodeMinio { fill: #fff0f3; stroke: #c72e49; stroke-width: 2; rx: 18; }
+      .nodeRedis { fill: #fff0eb; stroke: #d82c20; stroke-width: 2; rx: 18; }
+      .nodeWarn { fill: #fff4df; stroke: #d98e04; stroke-width: 2; rx: 18; }
+      .nodeAudit { fill: #f8ebe5; stroke: #b3452f; stroke-width: 2; rx: 18; }
+      .label { font: 700 16px Arial, sans-serif; fill: #173225; }
+      .small { font: 400 13px Arial, sans-serif; fill: #526258; }
+      .arrow { stroke: #1c3125; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .legend { font: 700 14px Arial, sans-serif; fill: #173225; }
+      .legendText { font: 400 13px Arial, sans-serif; fill: #5d6c63; }
+      .badgeText { font: 700 15px Arial, sans-serif; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="1380" fill="url(#bg)"/>
+  <text class="title" x="54" y="60">Agentic AI Document Intelligence Architecture</text>
+  <text class="subtitle" x="54" y="92">Four-view presentation: UI flow, backend flow, full stack flow, and CrewAI agent flow</text>
+
+  <g transform="translate(36,120)">
+    <rect class="panel" x="0" y="0" width="744" height="560"/>
+    <text class="panelTitle" x="28" y="42">UI Flow</text>
+    <text class="panelText" x="28" y="66">Customer and reviewer journey through the React interface</text>
+    <circle cx="70" cy="114" r="22" fill="#1696b6"/><text class="badgeText" x="70" y="116">U</text>
+    <rect class="nodeReact" x="110" y="84" width="160" height="64"/><text class="label" x="151" y="118">Upload Form</text><text class="small" x="140" y="138">file, type, metadata</text>
+    <rect class="nodeReact" x="320" y="84" width="160" height="64"/><text class="label" x="358" y="118">Dashboard</text><text class="small" x="344" y="138">status and workflow KPIs</text>
+    <rect class="nodeReact" x="530" y="84" width="160" height="64"/><text class="label" x="557" y="118">Search View</text><text class="small" x="551" y="138">traceability and lookup</text>
+    <path class="arrow" d="M270 116 H320"/><path class="arrow" d="M480 116 H530"/>
+    <circle cx="70" cy="290" r="22" fill="#d98e04"/><text class="badgeText" x="70" y="292">R</text>
+    <rect class="nodeWarn" x="110" y="260" width="180" height="72"/><text class="label" x="145" y="295">Notification Email</text><text class="small" x="137" y="316">review requested by AI</text>
+    <rect class="nodeWarn" x="340" y="260" width="160" height="72"/><text class="label" x="369" y="295">Review Queue</text><text class="small" x="364" y="316">approve or reject</text>
+    <rect class="nodeWarn" x="550" y="260" width="140" height="72"/><text class="label" x="578" y="295">Decision</text><text class="small" x="571" y="316">human callback</text>
+    <path class="arrow" d="M290 296 H340"/><path class="arrow" d="M500 296 H550"/>
+    <rect class="node" x="110" y="420" width="580" height="88"/><text class="label" x="136" y="456">UI outcomes</text><text class="small" x="136" y="478">Customers submit and track documents. Reviewers receive a clear review list, inspect extracted fields, and return decisions into the workflow.</text>
+  </g>
+
+  <g transform="translate(820,120)">
+    <rect class="panel" x="0" y="0" width="744" height="560"/>
+    <text class="panelTitle" x="28" y="42">Backend Flow</text>
+    <text class="panelText" x="28" y="66">Django control plane, data services, workflow execution, and notifications</text>
+    <circle cx="64" cy="118" r="22" fill="#0c4b33"/><text class="badgeText" x="64" y="120">D</text>
+    <rect class="nodeDjango" x="104" y="88" width="156" height="64"/><text class="label" x="138" y="122">Django API</text><text class="small" x="122" y="142">request validation</text>
+    <circle cx="310" cy="118" r="22" fill="#c72e49"/><text class="badgeText" x="310" y="120">O</text>
+    <rect class="nodeMinio" x="350" y="88" width="156" height="64"/><text class="label" x="400" y="122">MinIO</text><text class="small" x="374" y="142">document storage</text>
+    <circle cx="556" cy="118" r="22" fill="#47a248"/><text class="badgeText" x="556" y="120">M</text>
+    <rect class="nodeMongo" x="596" y="88" width="120" height="64"/><text class="label" x="619" y="122">MongoDB</text><text class="small" x="609" y="142">workflow data</text>
+    <path class="arrow" d="M260 120 H350"/><path class="arrow" d="M260 138 H596"/>
+    <circle cx="220" cy="288" r="22" fill="#d82c20"/><text class="badgeText" x="220" y="290">R</text>
+    <rect class="nodeRedis" x="260" y="258" width="150" height="72"/><text class="label" x="293" y="292">CrewAI Run</text><text class="small" x="272" y="314">workflow runner</text>
+    <circle cx="468" cy="288" r="22" fill="#4564f2"/><text class="badgeText" x="468" y="290">C</text>
+    <rect class="nodeCrew" x="508" y="258" width="160" height="72"/><text class="label" x="533" y="292">Email Service</text><text class="small" x="535" y="314">direct execution</text>
+    <path class="arrow" d="M182 152 V294 H260"/>
+    <path class="arrow" d="M410 294 H508"/>
+    <rect class="nodeWarn" x="260" y="416" width="190" height="74"/><text class="label" x="294" y="452">Notification Task</text><text class="small" x="282" y="474">email reviewer and callback</text>
+    <rect class="nodeAudit" x="500" y="416" width="190" height="74"/><text class="label" x="550" y="452">Audit Log</text><text class="small" x="537" y="474">trace every major event</text>
+    <path class="arrow" d="M588 330 V453 H450"/><path class="arrow" d="M588 330 V453 H500"/>
+    <rect class="node" x="104" y="420" width="112" height="70"/><text class="label" x="129" y="454">Review API</text><text class="small" x="123" y="476">human action</text>
+    <path class="arrow" d="M216 455 H260"/>
+  </g>
+
+  <g transform="translate(36,724)">
+    <rect class="panel" x="0" y="0" width="744" height="602"/>
+    <text class="panelTitle" x="28" y="42">Full Stack Flow</text>
+    <text class="panelText" x="28" y="66">End-to-end path from upload through automation and escalation</text>
+    <circle cx="70" cy="126" r="22" fill="#1696b6"/><text class="badgeText" x="70" y="128">R</text>
+    <rect class="nodeReact" x="110" y="96" width="154" height="64"/><text class="label" x="161" y="130">React</text><text class="small" x="145" y="150">upload and monitor</text>
+    <circle cx="310" cy="126" r="22" fill="#0c4b33"/><text class="badgeText" x="310" y="128">D</text>
+    <rect class="nodeDjango" x="350" y="96" width="154" height="64"/><text class="label" x="390" y="130">Django</text><text class="small" x="370" y="150">control plane</text>
+    <circle cx="550" cy="126" r="22" fill="#d82c20"/><text class="badgeText" x="550" y="128">Q</text>
+    <rect class="nodeRedis" x="590" y="96" width="120" height="64"/><text class="label" x="617" y="130">Django Run</text><text class="small" x="604" y="150">Direct Django</text>
+    <path class="arrow" d="M264 128 H350"/><path class="arrow" d="M504 128 H590"/>
+    <circle cx="168" cy="304" r="22" fill="#4564f2"/><text class="badgeText" x="168" y="306">A</text>
+    <rect class="nodeCrew" x="208" y="274" width="176" height="72"/><text class="label" x="250" y="308">CrewAI Workflow</text><text class="small" x="240" y="330">multi-agent decisions</text>
+    <circle cx="458" cy="304" r="22" fill="#4285f4"/><text class="badgeText" x="458" y="306">G</text>
+    <rect class="nodeGemini" x="498" y="274" width="174" height="72"/><text class="label" x="552" y="308">Gemini</text><text class="small" x="527" y="330">reasoning engine</text>
+    <path class="arrow" d="M650 160 V310 H208"/><path class="arrow" d="M384 310 H498"/>
+    <circle cx="168" cy="486" r="22" fill="#47a248"/><text class="badgeText" x="168" y="488">M</text>
+    <rect class="nodeMongo" x="208" y="456" width="176" height="72"/><text class="label" x="252" y="490">MongoDB</text><text class="small" x="234" y="512">state, extraction, review</text>
+    <circle cx="458" cy="486" r="22" fill="#c72e49"/><text class="badgeText" x="458" y="488">O</text>
+    <rect class="nodeMinio" x="498" y="456" width="174" height="72"/><text class="label" x="555" y="490">MinIO</text><text class="small" x="533" y="512">original files and pages</text>
+    <path class="arrow" d="M296 346 V456"/><path class="arrow" d="M586 346 V456"/>
+    <rect class="nodeWarn" x="146" y="558" width="220" height="74"/><text class="label" x="192" y="594">Human Review Trigger</text><text class="small" x="176" y="616">raised only for low confidence or high risk</text>
+    <rect class="nodeAudit" x="406" y="558" width="220" height="74"/><text class="label" x="456" y="594">Audit + Final Status</text><text class="small" x="443" y="616">completed, rejected, or pending review</text>
+    <path class="arrow" d="M296 528 V595 H366"/><path class="arrow" d="M586 528 V595 H626"/>
+  </g>
+
+  <g transform="translate(820,724)">
+    <rect class="panel" x="0" y="0" width="744" height="602"/>
+    <text class="panelTitle" x="28" y="42">Agent Flow</text>
+    <text class="panelText" x="28" y="66">CrewAI stages with structured Pydantic outputs and human escalation path</text>
+    <rect class="node" x="38" y="112" width="126" height="64"/><text class="label" x="58" y="146">Ingestion</text>
+    <rect class="node" x="190" y="112" width="134" height="64"/><text class="label" x="205" y="146">Preprocess</text>
+    <rect class="node" x="350" y="112" width="132" height="64"/><text class="label" x="372" y="146">Classify</text>
+    <rect class="node" x="508" y="112" width="126" height="64"/><text class="label" x="531" y="146">Extract</text>
+    <path class="arrow" d="M164 144 H190"/><path class="arrow" d="M324 144 H350"/><path class="arrow" d="M482 144 H508"/>
+    <rect class="nodeCrew" x="116" y="272" width="150" height="72"/><text class="label" x="151" y="306">Validate</text><text class="small" x="130" y="328">policy and risk checks</text>
+    <rect class="nodeCrew" x="310" y="272" width="150" height="72"/><text class="label" x="357" y="306">Route</text><text class="small" x="334" y="328">straight-through path</text>
+    <rect class="nodeWarn" x="504" y="272" width="150" height="72"/><text class="label" x="532" y="306">Exception</text><text class="small" x="519" y="328">normalize failure case</text>
+    <path class="arrow" d="M571 176 V308 H266"/><path class="arrow" d="M266 308 H310"/><path class="arrow" d="M460 308 H504"/>
+    <rect class="nodeWarn" x="214" y="438" width="160" height="72"/><text class="label" x="259" y="472">Review</text><text class="small" x="233" y="494">instructions and owner</text>
+    <rect class="nodeAudit" x="420" y="438" width="160" height="72"/><text class="label" x="473" y="472">Audit</text><text class="small" x="445" y="494">timeline and summary</text>
+    <path class="arrow" d="M579 344 V474 H374"/><path class="arrow" d="M374 474 H420"/><path class="arrow" d="M385 344 V438"/>
+    <rect class="node" x="82" y="540" width="550" height="36"/><text class="small" x="100" y="563">Each stage returns structured JSON via Pydantic. The review branch activates only when confidence, policy, or risk requires a human.</text>
+  </g>
+
+  <g transform="translate(48,1328)">
+    <text class="legend" x="0" y="0">Color legend:</text>
+    <rect x="106" y="-16" width="18" height="18" fill="#eefaff" stroke="#1696b6"/><text class="legendText" x="132" y="-2">UI and React</text>
+    <rect x="250" y="-16" width="18" height="18" fill="#edf6ef" stroke="#0c4b33"/><text class="legendText" x="276" y="-2">Django control plane</text>
+    <rect x="462" y="-16" width="18" height="18" fill="#eef2ff" stroke="#4564f2"/><text class="legendText" x="488" y="-2">CrewAI and orchestration</text>
+    <rect x="690" y="-16" width="18" height="18" fill="#eef4ff" stroke="#4285f4"/><text class="legendText" x="716" y="-2">Gemini reasoning</text>
+    <rect x="886" y="-16" width="18" height="18" fill="#eefaf1" stroke="#47a248"/><text class="legendText" x="912" y="-2">MongoDB data layer</text>
+    <rect x="1086" y="-16" width="18" height="18" fill="#fff0f3" stroke="#c72e49"/><text class="legendText" x="1112" y="-2">MinIO object storage</text>
+    <rect x="1296" y="-16" width="18" height="18" fill="#fff4df" stroke="#d98e04"/><text class="legendText" x="1322" y="-2">Human review and exceptions</text>
+  </g>
+</svg>
+
+

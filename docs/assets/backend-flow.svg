@@ -1,0 +1,35 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">Backend Flow</title>
+  <desc id="desc">Presentation-style backend flow for Django, MongoDB, MinIO, direct workflow execution, and notifications.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#fbf7ef"/><stop offset="100%" stop-color="#efe2ca"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#635646" flood-opacity="0.16"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#173225"/></marker>
+    <style>
+      .title{font:700 34px Arial,sans-serif;fill:#173225}.sub{font:400 17px Arial,sans-serif;fill:#5b6d63}.panel{fill:#fff8ef;stroke:#d7c8b4;stroke-width:2;rx:22;filter:url(#shadow)}
+      .dj{fill:#edf6ef;stroke:#0c4b33;stroke-width:2;rx:18}.db{fill:#eefaf1;stroke:#47a248;stroke-width:2;rx:18}.obj{fill:#fff0f3;stroke:#c72e49;stroke-width:2;rx:18}.queue{fill:#fff0eb;stroke:#d82c20;stroke-width:2;rx:18}.job{fill:#eef2ff;stroke:#4564f2;stroke-width:2;rx:18}.warn{fill:#fff4df;stroke:#d98e04;stroke-width:2;rx:18}.audit{fill:#f8ebe5;stroke:#b3452f;stroke-width:2;rx:18}
+      .label{font:700 18px Arial,sans-serif;fill:#173225}.small{font:400 13px Arial,sans-serif;fill:#526258}.arrow{stroke:#173225;stroke-width:3;fill:none;marker-end:url(#arrow)}.badge{font:700 15px Arial,sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:middle}
+    </style>
+  </defs>
+  <rect width="1400" height="760" fill="url(#bg)"/>
+  <text class="title" x="46" y="58">Backend Flow</text>
+  <text class="sub" x="46" y="88">Control plane, storage, workflow execution, and notification lifecycle</text>
+  <rect class="panel" x="44" y="126" width="1312" height="574"/>
+  <circle cx="116" cy="214" r="24" fill="#0c4b33"/><text class="badge" x="116" y="216">D</text>
+  <rect class="dj" x="166" y="178" width="220" height="76"/><text class="label" x="228" y="214">Django API</text><text class="small" x="204" y="236">validate request and route work</text>
+  <circle cx="466" cy="214" r="24" fill="#c72e49"/><text class="badge" x="466" y="216">O</text>
+  <rect class="obj" x="516" y="178" width="190" height="76"/><text class="label" x="582" y="214">MinIO</text><text class="small" x="551" y="236">original document storage</text>
+  <circle cx="806" cy="214" r="24" fill="#47a248"/><text class="badge" x="806" y="216">M</text>
+  <rect class="db" x="856" y="178" width="190" height="76"/><text class="label" x="906" y="214">MongoDB</text><text class="small" x="881" y="236">documents and workflow state</text>
+  <path class="arrow" d="M386 216 H516"/><path class="arrow" d="M386 236 H856"/>
+  <circle cx="290" cy="406" r="24" fill="#d82c20"/><text class="badge" x="290" y="408">R</text>
+  <rect class="queue" x="340" y="370" width="190" height="76"/><text class="label" x="402" y="406">CrewAI Run</text><text class="small" x="381" y="428">direct workflow call</text>
+  <circle cx="644" cy="406" r="24" fill="#4564f2"/><text class="badge" x="644" y="408">C</text>
+  <rect class="job" x="694" y="370" width="220" height="76"/><text class="label" x="749" y="406">Email Service</text><text class="small" x="735" y="428">review notifications</text>
+  <path class="arrow" d="M276 254 V408 H340"/><path class="arrow" d="M530 408 H694"/>
+  <rect class="warn" x="280" y="540" width="260" height="82"/><text class="label" x="339" y="578">Notification Task</text><text class="small" x="312" y="600">send reviewer email and callback URL</text>
+  <rect class="audit" x="620" y="540" width="260" height="82"/><text class="label" x="703" y="578">Audit Logging</text><text class="small" x="681" y="600">append workflow and review events</text>
+  <rect class="dj" x="960" y="540" width="260" height="82"/><text class="label" x="1032" y="578">Review Callback API</text><text class="small" x="1026" y="600">apply reviewer decision to state</text>
+  <path class="arrow" d="M804 446 V581 H540"/><path class="arrow" d="M804 446 V581 H620"/><path class="arrow" d="M951 216 V581 H960"/>
+</svg>
+

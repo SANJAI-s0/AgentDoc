@@ -1,0 +1,22 @@
+﻿{
+  "document_type": "receipt",
+  "expected_fields": {
+    "store_name": "FRESHMART SUPERSTORE",
+    "store_id": "FM-CH-22",
+    "receipt_number": "RCPT-889214",
+    "date": "2026-03-10",
+    "time": "18:42",
+    "cashier": "Priya N",
+    "subtotal": "671.00",
+    "discount": "21.00",
+    "tax": "33.50",
+    "grand_total": "683.50",
+    "payment_method": "UPI",
+    "transaction_id": "UPI7845120061"
+  },
+  "validation_expectations": [
+    "grand_total should equal subtotal minus discount plus tax",
+    "receipt should be categorized as retail purchase proof",
+    "payment method and transaction ID should be captured together"
+  ]
+}

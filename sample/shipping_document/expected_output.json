@@ -1,0 +1,13 @@
+{
+  "document_type": "shipping_document",
+  "fields": {
+    "bill_of_lading_number": "BL-7782-2026",
+    "shipper": "Eastport Retail Supplies",
+    "consignee": "BrightMart Stores",
+    "origin": "Chennai Port",
+    "destination": "Los Angeles Port",
+    "declared_value": "15800.00",
+    "date": "2026-03-15"
+  },
+  "expected_status": "completed"
+}
