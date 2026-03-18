@@ -1,0 +1,160 @@
+---
+title: AgentDoc — How It Works
+---
+flowchart TD
+    %% ─────────────────────────────────────────
+    %% START
+    %% ─────────────────────────────────────────
+    START(["👤  You open AgentDoc\nin your browser"])
+
+    START --> LOGIN
+
+    %% ─────────────────────────────────────────
+    %% AUTH
+    %% ─────────────────────────────────────────
+    subgraph AUTH["  Step 1 — Sign In"]
+        direction TB
+        LOGIN{"Have an account?"}
+        SIGNUP["📝 Create an account\nEnter name · email · password"]
+        SIGNIN["🔑 Log in\nEnter username · password"]
+    end
+
+    LOGIN -->|"No"| SIGNUP --> SIGNIN
+    LOGIN -->|"Yes"| SIGNIN
+
+    SIGNIN --> DASHBOARD
+
+    %% ─────────────────────────────────────────
+    %% DASHBOARD
+    %% ─────────────────────────────────────────
+    subgraph HOME["  Step 2 — Your Dashboard"]
+        direction TB
+        DASHBOARD["🏠 Dashboard\nSee all your documents\nand their current status"]
+    end
+
+    DASHBOARD --> UPLOAD_Q
+
+    %% ─────────────────────────────────────────
+    %% UPLOAD
+    %% ─────────────────────────────────────────
+    UPLOAD_Q{"What do you\nwant to do?"}
+
+    UPLOAD_Q -->|"Upload a document"| UPLOAD
+    UPLOAD_Q -->|"Check a document"| VIEW
+    UPLOAD_Q -->|"Search documents"| SEARCH
+
+    subgraph UPLOAD_STEP["  Step 3 — Upload a Document"]
+        direction TB
+        UPLOAD["📎 Pick your file\nPDF · Image · Text"]
+        FILE_TYPE{"File type\nsupported?"}
+        REJECTED_FILE["❌ Unsupported file\nTry PDF, JPG, PNG or TXT"]
+        DUPLICATE{"Already\nuploaded before?"}
+        DUP_WARN["⚠️ Duplicate detected\nShows your existing document"]
+        SAVED["✅ File saved securely\nProcessing begins..."]
+    end
+
+    UPLOAD --> FILE_TYPE
+    FILE_TYPE -->|"No"| REJECTED_FILE
+    FILE_TYPE -->|"Yes"| DUPLICATE
+    DUPLICATE -->|"Yes"| DUP_WARN
+    DUPLICATE -->|"No"| SAVED
+
+    %% ─────────────────────────────────────────
+    %% AI PROCESSING
+    %% ─────────────────────────────────────────
+    SAVED --> AI_PROC
+
+    subgraph AI_STEP["  Step 4 — AI Reads Your Document  🤖"]
+        direction TB
+        AI_PROC["🔍 AI scans the document\nReads text · checks quality"]
+        AI_TYPE["🏷️ Figures out what it is\nInvoice? KYC form? Contract?\nReceipt? Loan application?"]
+        AI_EXTRACT["📋 Pulls out key information\nNames · dates · amounts · IDs"]
+        AI_CHECK["✔️ Checks everything looks right\nAre all required fields present?\nDoes the data make sense?"]
+        AI_RISK["🎯 Calculates a risk score\nLow risk → auto approved\nHigh risk → needs human review"]
+    end
+
+    AI_PROC --> AI_TYPE --> AI_EXTRACT --> AI_CHECK --> AI_RISK
+
+    %% ─────────────────────────────────────────
+    %% DECISION
+    %% ─────────────────────────────────────────
+    AI_RISK --> DECISION
+
+    subgraph DECISION_STEP["  Step 5 — What Happens Next?"]
+        direction TB
+        DECISION{"AI Decision"}
+        AUTO_OK["✅ Auto Approved\nEverything looks good!\nNo action needed from you."]
+        NEEDS_REVIEW["👀 Sent for Human Review\nA reviewer will check it\nYou'll get an email notification"]
+        FLAGGED["🚨 Flagged for Investigation\nHigh risk detected\nEscalated to specialist team"]
+    end
+
+    DECISION -->|"Low risk\nAll fields present"| AUTO_OK
+    DECISION -->|"Some issues\nor missing fields"| NEEDS_REVIEW
+    DECISION -->|"High risk\nor suspected fraud"| FLAGGED
+
+    %% ─────────────────────────────────────────
+    %% REVIEW FLOW
+    %% ─────────────────────────────────────────
+    NEEDS_REVIEW --> REVIEW_STEP
+
+    subgraph REVIEW_STEP["  Step 6 — Human Review  (Reviewer only)"]
+        direction TB
+        EMAIL["📧 Reviewer gets an email\nwith a link to the document"]
+        REVIEW_ACTION{"Reviewer\ndecision"}
+        R_APPROVE["✅ Approved\nDocument accepted"]
+        R_REJECT["❌ Rejected\nDocument declined"]
+        R_CHANGES["🔄 Changes Requested\nSent back for corrections"]
+    end
+
+    EMAIL --> REVIEW_ACTION
+    REVIEW_ACTION -->|"Looks good"| R_APPROVE
+    REVIEW_ACTION -->|"Not valid"| R_REJECT
+    REVIEW_ACTION -->|"Needs fix"| R_CHANGES
+
+    %% ─────────────────────────────────────────
+    %% VIEW & SEARCH
+    %% ─────────────────────────────────────────
+    subgraph VIEW_STEP["  View Document Details"]
+        direction TB
+        VIEW["📄 Open any document\nSee extracted fields\nCheck validation results\nRead the full audit trail"]
+    end
+
+    subgraph SEARCH_STEP["  Search Documents"]
+        direction TB
+        SEARCH["🔎 Search by keyword\nor describe what you're looking for\nAI finds the closest match"]
+    end
+
+    %% ─────────────────────────────────────────
+    %% FINAL STATES
+    %% ─────────────────────────────────────────
+    AUTO_OK & R_APPROVE & R_REJECT --> DONE
+    FLAGGED --> DONE
+
+    DONE(["📁 Document stored\nFull history saved\nSearchable anytime"])
+
+    DONE --> DASHBOARD
+
+    %% ─────────────────────────────────────────
+    %% STYLES
+    %% ─────────────────────────────────────────
+    classDef startEnd    fill:#1d4ed8,stroke:#3b82f6,color:#fff,font-weight:bold
+    classDef authNode    fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe
+    classDef homeNode    fill:#1e293b,stroke:#475569,color:#e2e8f0
+    classDef uploadNode  fill:#164e63,stroke:#0891b2,color:#cffafe
+    classDef aiNode      fill:#4c1d95,stroke:#7c3aed,color:#e9d5ff
+    classDef okNode      fill:#14532d,stroke:#22c55e,color:#dcfce7
+    classDef reviewNode  fill:#78350f,stroke:#f59e0b,color:#fef3c7
+    classDef flagNode    fill:#7f1d1d,stroke:#ef4444,color:#fecaca
+    classDef warnNode    fill:#422006,stroke:#f97316,color:#fed7aa
+    classDef searchNode  fill:#1e1b4b,stroke:#6366f1,color:#e0e7ff
+
+    class START,DONE startEnd
+    class LOGIN,SIGNUP,SIGNIN authNode
+    class DASHBOARD homeNode
+    class UPLOAD,FILE_TYPE,DUPLICATE,SAVED uploadNode
+    class REJECTED_FILE,DUP_WARN warnNode
+    class AI_PROC,AI_TYPE,AI_EXTRACT,AI_CHECK,AI_RISK,DECISION aiNode
+    class AUTO_OK,R_APPROVE okNode
+    class EMAIL,REVIEW_ACTION,R_CHANGES reviewNode
+    class FLAGGED,R_REJECT flagNode
+    class VIEW,SEARCH searchNode
