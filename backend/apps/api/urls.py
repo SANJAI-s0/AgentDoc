@@ -19,6 +19,7 @@ from .views import (
     SearchView,
     SemanticSearchView,
     SessionView,
+    SignupView,
     TokenRefreshView,
     TriggerReviewView,
 )
@@ -27,6 +28,7 @@ urlpatterns = [
     path("health/", HealthView.as_view(), name="health"),
     path("auth/csrf/", CsrfView.as_view(), name="auth-csrf"),
     path("auth/me/", SessionView.as_view(), name="auth-me"),
+    path("auth/signup/", SignupView.as_view(), name="auth-signup"),
     path("auth/login/", LoginView.as_view(), name="auth-login"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="auth-refresh"),
     path("auth/logout/", LogoutView.as_view(), name="auth-logout"),

@@ -8,6 +8,15 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(trim_whitespace=False)
 
 
+class SignupSerializer(serializers.Serializer):
+    username = serializers.CharField(min_length=3, max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(min_length=8, trim_whitespace=False)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    display_name = serializers.CharField(required=False, allow_blank=True)
+
+
 class UploadUrlSerializer(serializers.Serializer):
     file_name = serializers.CharField()
     mime_type = serializers.CharField(default="application/pdf")

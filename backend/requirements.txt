@@ -1,26 +1,30 @@
-﻿# Core API
-Django==5.1.5
-djangorestframework==3.15.2
-djangorestframework-simplejwt==5.3.1
-django-cors-headers==4.6.0
+﻿# Core Django
+Django>=4.2,<5.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.0.0
+djangorestframework-simplejwt>=5.2.0
+python-dotenv>=1.0.0
 
-# Data + storage
-pymongo[srv]==4.10.1
-minio==7.2.15
+# Database
+pymongo>=4.5.0
 
-# Agent orchestration + schema modeling
-crewai==0.108.0
-sentence-transformers==3.4.1
-pydantic==2.10.6
-python-dotenv==1.0.1
+# AI & ML
+langchain>=0.1.0
+langchain-google-genai>=0.0.6
+google-generativeai>=0.3.0
+sentence-transformers>=2.2.0
+torch>=2.0.0
+numpy>=1.24.0
 
-# OCR and image processing
-numpy==1.26.4
-Pillow==11.1.0
-pytesseract==0.3.13
-opencv-python-headless==4.10.0.84
-paddleocr==2.8.1
+# Document Processing
+Pillow>=10.0.0
+opencv-python-headless>=4.8.0
+pytesseract>=0.3.10
 
-# Parsing + app server
-pypdf==5.1.0
-gunicorn==22.0.0
+# WSGI Server
+gunicorn>=21.2.0
+whitenoise>=6.5.0
+
+# Utilities
+requests>=2.31.0
+python-dateutil>=2.8.2

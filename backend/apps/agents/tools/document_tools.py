@@ -27,14 +27,11 @@ except Exception:  # pragma: no cover
     PaddleOCR = None
 
 try:
-    from crewai.tools import tool
-except Exception:  # pragma: no cover
-
-    def tool(_name: str):
-        def decorator(func):
-            return func
-
-        return decorator
+    from langchain.tools import tool
+except ImportError:
+    def tool(func):
+        """Fallback decorator if LangChain not available"""
+        return func
 
 
 @dataclass
@@ -285,20 +282,20 @@ preprocess_helper = PreprocessTool()
 field_extractor = FieldExtractionTool()
 
 
-@tool("ocr_tool")
+@tool
 def crewai_ocr_tool(pages_payload: str) -> str:
     """Extract OCR text from document pages provided as JSON."""
     pages = json.loads(pages_payload) if pages_payload else []
     return json.dumps(ocr_helper.run(pages))
 
 
-@tool("policy_lookup_tool")
+@tool
 def crewai_policy_lookup_tool(document_type: str) -> str:
     """Return required field policy rules for a given document type."""
     return json.dumps(policy_helper.run(document_type))
 
 
-@tool("search_knowledge_tool")
+@tool
 def crewai_search_knowledge_tool(query: str) -> str:
     """Search similar historical cases and knowledge snippets."""
     return json.dumps(search_helper.run(query))

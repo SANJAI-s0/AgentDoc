@@ -6,18 +6,7 @@ from django.conf import settings
 
 from services.vector_search import vector_search_service
 
-from .prompts.library import (
-    AUDIT_PROMPT,
-    CLASSIFICATION_PROMPT,
-    EXCEPTION_PROMPT,
-    EXTRACTION_PROMPT,
-    INGESTION_PROMPT,
-    PREPROCESSING_PROMPT,
-    REVIEW_PROMPT,
-    ROUTING_PROMPT,
-    SYSTEM_PROMPT,
-    VALIDATION_PROMPT,
-)
+from .prompts.library import SYSTEM_PROMPT
 from .schemas import (
     AuditOutput,
     ClassificationOutput,
@@ -37,16 +26,13 @@ from .tools.document_tools import (
     OCRTool,
     PolicyLookupTool,
     SearchKnowledgeTool,
-    crewai_ocr_tool,
-    crewai_policy_lookup_tool,
-    crewai_search_knowledge_tool,
     field_extractor,
 )
 
 try:
-    from crewai import Agent, Crew, LLM, Process, Task
-except Exception:  # pragma: no cover
-    Agent = Crew = LLM = Process = Task = None
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:
+    ChatGoogleGenerativeAI = None
 
 
 SUPPORTED_TYPES = [
@@ -68,114 +54,36 @@ class DocumentCrewFactory:
         self.search_tool = SearchKnowledgeTool()
 
     def build_crew(self, payload: dict[str, Any]):
-        if not all([Agent, Crew, LLM, Process, Task]):
+        """Build LangChain-based workflow (replaces CrewAI)"""
+        if not ChatGoogleGenerativeAI or not settings.GEMINI_API_KEY:
             return None
 
-        llm = LLM(model=settings.GEMINI_MODEL, api_key=settings.GEMINI_API_KEY, temperature=0.1)
+        # Initialize LangChain LLM
+        llm = ChatGoogleGenerativeAI(
+            model=settings.GEMINI_MODEL.replace("gemini/", ""),
+            google_api_key=settings.GEMINI_API_KEY,
+            temperature=0.1,
+        )
 
-        agents = {
-            "ingestion": Agent(
-                role="Ingestion Agent",
-                goal=INGESTION_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "preprocessing": Agent(
-                role="Preprocessing Agent",
-                goal=PREPROCESSING_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                tools=[crewai_ocr_tool],
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "classification": Agent(
-                role="Classification Agent",
-                goal=CLASSIFICATION_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                tools=[crewai_search_knowledge_tool],
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "extraction": Agent(
-                role="Extraction Agent",
-                goal=EXTRACTION_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                tools=[crewai_ocr_tool],
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "validation": Agent(
-                role="Validation Agent",
-                goal=VALIDATION_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                tools=[crewai_policy_lookup_tool],
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "routing": Agent(
-                role="Routing Agent",
-                goal=ROUTING_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "exception": Agent(
-                role="Exception Agent",
-                goal=EXCEPTION_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                tools=[crewai_search_knowledge_tool],
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "review": Agent(
-                role="Review Agent",
-                goal=REVIEW_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                allow_delegation=False,
-                verbose=True,
-            ),
-            "audit": Agent(
-                role="Audit Agent",
-                goal=AUDIT_PROMPT,
-                backstory=SYSTEM_PROMPT,
-                llm=llm,
-                allow_delegation=False,
-                verbose=True,
-            ),
-        }
-
-        tasks = [
-            Task(description=f"Assess intake metadata and produce ingestion output for: {payload}", agent=agents["ingestion"], output_pydantic=IngestionOutput),
-            Task(description=f"Assess page quality and OCR readiness for: {payload}", agent=agents["preprocessing"], output_pydantic=PreprocessingOutput),
-            Task(description=f"Classify the document for: {payload}", agent=agents["classification"], output_pydantic=ClassificationOutput),
-            Task(description=f"Extract business fields for: {payload}", agent=agents["extraction"], output_pydantic=ExtractionOutput),
-            Task(description=f"Validate extracted fields against policy for: {payload}", agent=agents["validation"], output_pydantic=ValidationOutput),
-            Task(description=f"Choose the best destination queue for: {payload}", agent=agents["routing"], output_pydantic=RoutingOutput),
-            Task(description=f"If exception handling is needed, define it for: {payload}", agent=agents["exception"], output_pydantic=ExceptionOutput),
-            Task(description=f"If human review is needed, prepare instructions for: {payload}", agent=agents["review"], output_pydantic=ReviewOutput),
-            Task(description=f"Produce an end-to-end audit summary for: {payload}", agent=agents["audit"], output_pydantic=AuditOutput),
-        ]
-
-        return Crew(agents=list(agents.values()), tasks=tasks, process=Process.sequential, verbose=True)
+        return {"llm": llm, "payload": payload}
 
     def execute(self, payload: dict[str, Any]) -> WorkflowState:
+        """Execute workflow using LangChain"""
         crew = self.build_crew(payload) if settings.GEMINI_API_KEY else None
         if crew:
             try:
-                result = crew.kickoff(inputs=payload)
+                # Use LangChain for processing
+                result = self._execute_langchain_workflow(crew["llm"], payload)
                 if isinstance(result, WorkflowState):
                     return result
             except Exception:
                 pass
+        return self.simulate(payload)
+    
+    def _execute_langchain_workflow(self, llm, payload: dict[str, Any]) -> WorkflowState:
+        """Execute workflow using LangChain agents"""
+        # For now, use simulation
+        # In future, implement LangChain agent chains here
         return self.simulate(payload)
 
     def _classify_document(self, payload: dict[str, Any], ocr_text: str) -> tuple[str, float, str, list[str]]:

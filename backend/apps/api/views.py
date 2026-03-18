@@ -31,6 +31,7 @@ from .serializers import (
     ReviewActionSerializer,
     ReviewSubmitSerializer,
     SearchSerializer,
+    SignupSerializer,
     TokenRefreshSerializer,
     TriggerReviewSerializer,
     UploadUrlSerializer,
@@ -153,7 +154,9 @@ def _estimate_page_count(content: bytes, mime_type: str, file_name: str) -> int:
         if PdfReader is None:
             return 1
         try:
-            reader = PdfReader(BytesIO(content))
+            # Strip UTF-8 BOM if present before parsing
+            pdf_bytes = content.lstrip(b'\xef\xbb\xbf')
+            reader = PdfReader(BytesIO(pdf_bytes), strict=False)
             return max(len(reader.pages), 1)
         except Exception:
             return 1
@@ -192,6 +195,51 @@ class SessionView(APIView):
         if identity is None:
             return Response({"authenticated": False})
         return Response(_auth_response(identity))
+
+
+class SignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from django.contrib.auth import get_user_model
+        
+        serializer = SignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        User = get_user_model()
+        
+        # Check if username already exists
+        if User.objects.filter(username=serializer.validated_data["username"]).exists():
+            return Response({"detail": "Username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if email already exists
+        if User.objects.filter(email=serializer.validated_data["email"]).exists():
+            return Response({"detail": "Email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create Django user
+        user = User.objects.create_user(
+            username=serializer.validated_data["username"],
+            email=serializer.validated_data["email"],
+            password=serializer.validated_data["password"],
+            first_name=serializer.validated_data.get("first_name", ""),
+            last_name=serializer.validated_data.get("last_name", ""),
+        )
+        
+        # Create MongoDB user profile
+        display_name = serializer.validated_data.get("display_name") or user.get_full_name() or user.username
+        user_profile = {
+            "user_id": user.username,
+            "auth_username": user.username,
+            "email": user.email,
+            "display_name": display_name,
+            "role": "customer",  # Default role
+            "preferences": {"language": "en"},
+        }
+        mongo_service.upsert_one("users", {"auth_username": user.username}, user_profile)
+        
+        # Generate tokens and return auth response
+        identity = _identity_for_request(type("obj", (object,), {"user": user})())
+        return Response(_auth_response(identity, _issue_tokens_for_user(user)), status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -519,6 +567,94 @@ class DocumentDetailView(APIView):
                 }
             )
         )
+    
+    def delete(self, request, document_id: str):
+        """Delete a document and all related data"""
+        identity, error = _require_identity(request)
+        if error:
+            return error
+
+        document = mongo_service.find_one("documents", {"document_id": document_id})
+        if not document:
+            return Response({"detail": "Document not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Only document owner or reviewers can delete
+        if not _can_review(identity) and document.get("user_id") != identity["user_id"]:
+            return Response({"detail": "You do not have permission to delete this document."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Delete from MongoDB collections
+        mongo_service.delete_one("documents", {"document_id": document_id})
+        mongo_service.delete_many("pages", {"document_id": document_id})
+        mongo_service.delete_many("extractions", {"document_id": document_id})
+        mongo_service.delete_many("validation_results", {"document_id": document_id})
+        mongo_service.delete_many("reviews", {"document_id": document_id})
+        
+        # Log deletion
+        mongo_service.append_audit_log(
+            document_id,
+            "document.deleted",
+            {
+                "deleted_by": identity["username"],
+                "user_id": identity["user_id"],
+                "file_name": document.get("file_name"),
+            }
+        )
+
+        # Try to delete from storage (optional, may fail if using MinIO)
+        storage_path = document.get("storage_path")
+        if storage_path:
+            try:
+                minio_storage.delete(storage_path)
+            except Exception:
+                pass  # Ignore storage deletion errors
+
+        return Response(
+            {"detail": "Document deleted successfully.", "document_id": document_id},
+            status=status.HTTP_200_OK
+        )
+    
+    def patch(self, request, document_id: str):
+        """Update document metadata"""
+        identity, error = _require_identity(request)
+        if error:
+            return error
+
+        document = mongo_service.find_one("documents", {"document_id": document_id})
+        if not document:
+            return Response({"detail": "Document not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Only document owner or reviewers can update
+        if not _can_review(identity) and document.get("user_id") != identity["user_id"]:
+            return Response({"detail": "You do not have permission to update this document."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Allowed fields to update
+        allowed_fields = ["title", "document_type_hint", "force_review"]
+        update_data = {}
+        
+        for field in allowed_fields:
+            if field in request.data:
+                update_data[field] = request.data[field]
+        
+        if not update_data:
+            return Response({"detail": "No valid fields to update."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update document
+        mongo_service.update_one("documents", {"document_id": document_id}, update_data)
+        
+        # Log update
+        mongo_service.append_audit_log(
+            document_id,
+            "document.updated",
+            {
+                "updated_by": identity["username"],
+                "updated_fields": list(update_data.keys()),
+                "changes": update_data,
+            }
+        )
+
+        # Return updated document
+        updated_document = mongo_service.find_one("documents", {"document_id": document_id})
+        return Response(_serialize(updated_document), status=status.HTTP_200_OK)
 
 
 class DocumentStatusView(APIView):
