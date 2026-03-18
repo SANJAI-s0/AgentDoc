@@ -1,0 +1,189 @@
+---
+title: AgentDoc — Layer-wise Architecture
+---
+flowchart TB
+    %% ─────────────────────────────────────────
+    %% LAYER 1 — PRESENTATION
+    %% ─────────────────────────────────────────
+    subgraph L1["🖥️  Layer 1 — Presentation Layer"]
+        direction LR
+        subgraph SPA["Browser / Web SPA"]
+            direction TB
+            SPA1["Vanilla JS + GSAP"]
+            SPA2["Hash-based Routing\n#dashboard · #documents · #reviews"]
+        end
+        subgraph UI["UI Components"]
+            direction TB
+            UI1["📊 Dashboard\nStats · Recent docs"]
+            UI2["📤 Upload Form\nFile picker · metadata"]
+            UI3["📋 Review Queue\nApprove · Reject · Request changes"]
+        end
+        subgraph SERVE["Serving"]
+            direction TB
+            SERVE1["Django Templates\nindex.html (SPA shell)\nlanding.html (public page)"]
+            SERVE2["WhiteNoise\nCompressed static files\nCSS · JS bundles"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% ARROW 1 → 2
+    %% ─────────────────────────────────────────
+    L1 <-->|"HTTP / REST API  ·  JWT Bearer token  ·  CSRF cookie"| L2
+
+    %% ─────────────────────────────────────────
+    %% LAYER 2 — APPLICATION
+    %% ─────────────────────────────────────────
+    subgraph L2["⚙️  Layer 2 — Application Layer"]
+        direction LR
+        subgraph FRAMEWORK["Django 4.2 + DRF"]
+            direction TB
+            FW1["Middleware Stack\nSecurity · CORS · CSRF · Session"]
+            FW2["SimpleJWT\nAccess token 60 min\nRefresh token 7 days"]
+            FW3["RBAC\ncustomer · reviewer · admin"]
+        end
+        subgraph ENDPOINTS["REST API Endpoints"]
+            direction TB
+            EP1["POST   /api/auth/signup · login · logout\nGET    /api/auth/me · /auth/csrf"]
+            EP2["POST   /api/documents/  ← workflow trigger\nGET | PATCH | DELETE  /api/documents/:id"]
+            EP3["GET    /api/reviews/\nPOST   /api/reviews/:id/action"]
+            EP4["GET    /api/search/  ·  /search/semantic/\nGET    /api/audit/:id  ·  /dashboard  ·  /health"]
+        end
+        subgraph TRIGGER["Workflow Trigger"]
+            direction TB
+            TR1["POST /api/documents/\n↓\nrun_document_workflow_sync(payload)"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% ARROW 2 → 3
+    %% ─────────────────────────────────────────
+    L2 <-->|"Internal Python calls  ·  Pydantic WorkflowState"| L3
+
+    %% ─────────────────────────────────────────
+    %% LAYER 3 — AGENTIC AI
+    %% ─────────────────────────────────────────
+    subgraph L3["🤖  Layer 3 — Agentic AI Layer  (Core Intelligence)"]
+        direction LR
+        subgraph ORCH["Orchestrator"]
+            direction TB
+            OR1["DocumentCrewFactory\nDocumentWorkflow.kick_off()"]
+            OR2["LangChain\nChatGoogleGenerativeAI\ngemini-2.5-flash · temp 0.1"]
+            OR3["Fallback\nDeterministic simulation\nif Gemini unavailable"]
+        end
+        subgraph AGENTS["5 Specialized Agents"]
+            direction TB
+            AG1["1️⃣  Classification Agent\nIngestion · quality check · doc type · confidence"]
+            AG2["2️⃣  Extraction Agent\nDual OCR: Tesseract + PaddleOCR\nRegex fields · confidence map"]
+            AG3["3️⃣  Validation Agent\nBusiness rules · risk scoring\nMissing field penalties"]
+            AG4["4️⃣  Routing Agent\nSLA-based queue decision\nauto_approve · ops_review · fraud_review"]
+            AG5["5️⃣  Audit Agent\nImmutable trail · timeline\nVector embedding update"]
+        end
+        subgraph AGENT_TOOLS["Tools  (document_tools.py)"]
+            direction TB
+            TL1["OCRTool — Tesseract + PaddleOCR"]
+            TL2["PreprocessTool — OpenCV denoising + Otsu"]
+            TL3["PolicyLookupTool — 8 doc type rules"]
+            TL4["FieldExtractionTool — regex + keyword match"]
+            TL5["SearchKnowledgeTool — vector similarity"]
+        end
+        subgraph PROMPTS["Prompt Library"]
+            direction TB
+            PR1["CLASSIFICATION_PROMPT\nEXTRACTION_PROMPT\nVALIDATION_PROMPT\nROUTING_PROMPT\nAUDIT_PROMPT"]
+        end
+    end
+
+    AG1 --> AG2 --> AG3 --> AG4 --> AG5
+
+    %% ─────────────────────────────────────────
+    %% ARROW 3 → 4
+    %% ─────────────────────────────────────────
+    L3 <-->|"Data access  ·  MongoService · VectorSearchService · MinioStorage"| L4
+
+    %% ─────────────────────────────────────────
+    %% LAYER 4 — DATA & STORAGE
+    %% ─────────────────────────────────────────
+    subgraph L4["🗄️  Layer 4 — Data & Storage Layer"]
+        direction LR
+        subgraph CTRL["Control Plane"]
+            direction TB
+            CP1["SQLite\ncontrol_plane.sqlite3\nDjango auth · sessions · admin"]
+        end
+        subgraph DOCDB["Document & Audit DB"]
+            direction TB
+            DB1["MongoDB 7\ndocuments · pages · extractions\nvalidation_results · reviews\naudit_logs · users"]
+            DB2["Vector Index\nsentence-transformers MiniLM-L6-v2\n165-dim cosine similarity"]
+        end
+        subgraph FILES["File Storage"]
+            direction TB
+            FS1["Local Disk  (dev)\nmedia/incoming/{doc_id}/{file}\nUSE_LOCAL_STORAGE=1"]
+            FS2["MinIO S3  (prod)\nS3-compatible object store\nPresigned URLs · 30 min upload"]
+        end
+        subgraph IMGPROC["Image Processing"]
+            direction TB
+            IP1["OpenCV\nDenoising · binarization\nLaplacian quality score"]
+            IP2["Pillow\nImage open · convert\nFrame count (multi-page)"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% ARROW 4 → 5
+    %% ─────────────────────────────────────────
+    L4 <-->|"Infrastructure services"| L5
+
+    %% ─────────────────────────────────────────
+    %% LAYER 5 — INFRASTRUCTURE
+    %% ─────────────────────────────────────────
+    subgraph L5["🚀  Layer 5 — Infrastructure Layer"]
+        direction LR
+        subgraph WSGI["WSGI Server"]
+            direction TB
+            WS1["Gunicorn\nMulti-worker · configurable timeout\nbind 0.0.0.0:8000"]
+        end
+        subgraph DEPLOY["Deployment"]
+            direction TB
+            DP1["Render.com  (current)\nrender.yaml · render-start.sh\nFree tier compatible"]
+            DP2["Docker Compose  (local dev)\nagentdoc · mongodb · minio · mailhog\nLive reload via volume mount"]
+            DP3["Production Dockerfile\nMulti-stage build · non-root user\nHealth check: GET /api/health/"]
+        end
+        subgraph STATIC["Static Files"]
+            direction TB
+            ST1["WhiteNoise\nCompressedManifestStaticFilesStorage\nServes CSS · JS without CDN"]
+        end
+        subgraph FUTURE["Future — AWS"]
+            direction TB
+            FT1["Elastic Beanstalk\nManaged app hosting"]
+            FT2["S3\nDocument object storage"]
+            FT3["DocumentDB\nMongoDB-compatible managed DB"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% CROSS-LAYER: NOTIFICATIONS
+    %% ─────────────────────────────────────────
+    subgraph NOTIF["📧  Notifications  (cross-layer)"]
+        direction LR
+        NF1["NotificationService\nsend_review_email()"]
+        NF2["Dev: MailHog :1025\nProd: SMTP provider"]
+    end
+
+    L3 -->|"review_required == true"| NOTIF
+    NOTIF --> NF2
+
+    %% ─────────────────────────────────────────
+    %% STYLES
+    %% ─────────────────────────────────────────
+    classDef l1Node  fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe
+    classDef l2Node  fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    classDef l3Node  fill:#3b0764,stroke:#7c3aed,color:#e9d5ff
+    classDef agNode  fill:#4c1d95,stroke:#8b5cf6,color:#ddd6fe
+    classDef l4Node  fill:#78350f,stroke:#f59e0b,color:#fef3c7
+    classDef l5Node  fill:#14532d,stroke:#22c55e,color:#dcfce7
+    classDef nfNode  fill:#164e63,stroke:#0891b2,color:#cffafe
+
+    class SPA1,SPA2,UI1,UI2,UI3,SERVE1,SERVE2 l1Node
+    class FW1,FW2,FW3,EP1,EP2,EP3,EP4,TR1 l2Node
+    class OR1,OR2,OR3,PR1 l3Node
+    class AG1,AG2,AG3,AG4,AG5,TL1,TL2,TL3,TL4,TL5 agNode
+    class CP1,DB1,DB2,FS1,FS2,IP1,IP2 l4Node
+    class WS1,DP1,DP2,DP3,ST1,FT1,FT2,FT3 l5Node
+    class NF1,NF2 nfNode
