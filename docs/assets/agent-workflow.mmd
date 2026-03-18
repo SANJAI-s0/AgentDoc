@@ -1,0 +1,99 @@
+%% 5-Agent Workflow - Sequential Processing Pipeline
+
+graph TD
+    START([📄 Document Upload]) --> AGENT1
+
+    subgraph "Agent 1: Classification"
+        AGENT1[🤖 Classification Agent]
+        A1_INGEST[Check Metadata & Storage]
+        A1_QUALITY[Assess Image Quality]
+        A1_CLASS[Classify Document Type]
+        A1_CONF[Calculate Confidence]
+        
+        AGENT1 --> A1_INGEST
+        A1_INGEST --> A1_QUALITY
+        A1_QUALITY --> A1_CLASS
+        A1_CLASS --> A1_CONF
+    end
+
+    A1_CONF -->|Document Type<br/>Confidence: 0.95| AGENT2
+
+    subgraph "Agent 2: Extraction"
+        AGENT2[🤖 Extraction Agent]
+        A2_OCR[Run OCR on Pages]
+        A2_PARSE[Parse Text Content]
+        A2_EXTRACT[Extract Required Fields]
+        A2_EVIDENCE[Gather Evidence]
+        
+        AGENT2 --> A2_OCR
+        A2_OCR --> A2_PARSE
+        A2_PARSE --> A2_EXTRACT
+        A2_EXTRACT --> A2_EVIDENCE
+    end
+
+    A2_EVIDENCE -->|Structured Fields<br/>Field Confidence| AGENT3
+
+    subgraph "Agent 3: Validation"
+        AGENT3[🤖 Validation Agent]
+        A3_REQUIRED[Check Required Fields]
+        A3_FORMAT[Validate Formats]
+        A3_RULES[Apply Business Rules]
+        A3_RISK[Calculate Risk Score]
+        
+        AGENT3 --> A3_REQUIRED
+        A3_REQUIRED --> A3_FORMAT
+        A3_FORMAT --> A3_RULES
+        A3_RULES --> A3_RISK
+    end
+
+    A3_RISK -->|Validation Status<br/>Risk Score: 0.15| AGENT4
+
+    subgraph "Agent 4: Routing"
+        AGENT4[🤖 Routing Agent]
+        A4_ANALYZE[Analyze Risk & Confidence]
+        A4_ROUTE{Route Decision}
+        A4_AUTO[Auto-Approve Queue]
+        A4_REVIEW[Review Queue]
+        A4_EXCEPTION[Exception Queue]
+        
+        AGENT4 --> A4_ANALYZE
+        A4_ANALYZE --> A4_ROUTE
+        A4_ROUTE -->|Low Risk| A4_AUTO
+        A4_ROUTE -->|Medium Risk| A4_REVIEW
+        A4_ROUTE -->|High Risk| A4_EXCEPTION
+    end
+
+    A4_AUTO --> AGENT5
+    A4_REVIEW --> AGENT5
+    A4_EXCEPTION --> AGENT5
+
+    subgraph "Agent 5: Audit"
+        AGENT5[🤖 Audit Agent]
+        A5_TIMELINE[Create Timeline]
+        A5_SUMMARY[Generate Summary]
+        A5_LOG[Create Audit Log]
+        A5_SEARCH[Make Searchable]
+        
+        AGENT5 --> A5_TIMELINE
+        A5_TIMELINE --> A5_SUMMARY
+        A5_SUMMARY --> A5_LOG
+        A5_LOG --> A5_SEARCH
+    end
+
+    A5_SEARCH --> END([✅ Workflow Complete])
+
+    %% Human Review Loop
+    A4_REVIEW -.->|Needs Review| HUMAN[👨‍💼 Human Reviewer]
+    HUMAN -.->|Approve/Reject| UPDATE[Update Document Status]
+    UPDATE -.-> AGENT5
+
+    %% Styling
+    classDef agentClass fill:#e8f5e9,stroke:#1b5e20,stroke-width:3px
+    classDef decisionClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef queueClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef humanClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class AGENT1,AGENT2,AGENT3,AGENT4,AGENT5 agentClass
+    class A4_ROUTE decisionClass
+    class A4_AUTO,A4_REVIEW,A4_EXCEPTION queueClass
+    class HUMAN humanClass

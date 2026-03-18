@@ -1,0 +1,110 @@
+%% Data Flow Diagram - Complete System
+
+sequenceDiagram
+    participant User as 👤 User
+    participant Landing as 🎨 Landing Page
+    participant Frontend as ⚛️ React Frontend
+    participant API as 🔌 Django API
+    participant Agent1 as 🤖 Agent 1<br/>Classification
+    participant Agent2 as 🤖 Agent 2<br/>Extraction
+    participant Agent3 as 🤖 Agent 3<br/>Validation
+    participant Agent4 as 🤖 Agent 4<br/>Routing
+    participant Agent5 as 🤖 Agent 5<br/>Audit
+    participant Gemini as 🧠 Gemini AI
+    participant MongoDB as 🗄️ MongoDB
+    participant Storage as 📦 Storage
+    participant Reviewer as 👨‍💼 Reviewer
+
+    %% User Journey
+    User->>Landing: Visit Landing Page
+    Landing->>User: Display Features & Demo
+    User->>Landing: Click "Launch Demo"
+    Landing->>Frontend: Redirect to App
+
+    %% Authentication
+    User->>Frontend: Login (customer_demo)
+    Frontend->>API: POST /api/auth/login/
+    API->>MongoDB: Verify Credentials
+    MongoDB-->>API: User Data
+    API-->>Frontend: JWT Token
+    Frontend-->>User: Dashboard
+
+    %% Document Upload
+    User->>Frontend: Upload Document
+    Frontend->>API: POST /api/documents/upload-url/
+    API-->>Frontend: Presigned Upload URL
+    Frontend->>Storage: Upload File (Direct)
+    Storage-->>Frontend: Upload Complete
+    Frontend->>API: POST /api/documents/upload/ (Finalize)
+    
+    %% Agent Workflow Trigger
+    API->>Agent1: Trigger Workflow
+    
+    %% Agent 1: Classification
+    Agent1->>Storage: Read Document
+    Storage-->>Agent1: Document Data
+    Agent1->>Gemini: Classify Document Type
+    Gemini-->>Agent1: Classification Result
+    Agent1->>MongoDB: Store Classification
+    Agent1->>Agent2: Pass to Extraction
+
+    %% Agent 2: Extraction
+    Agent2->>Storage: Read Document Pages
+    Agent2->>Gemini: Extract Fields
+    Gemini-->>Agent2: Structured Data
+    Agent2->>MongoDB: Store Extraction
+    Agent2->>Agent3: Pass to Validation
+
+    %% Agent 3: Validation
+    Agent3->>MongoDB: Get Policy Rules
+    Agent3->>Gemini: Validate Fields
+    Gemini-->>Agent3: Validation Result
+    Agent3->>MongoDB: Store Validation
+    Agent3->>Agent4: Pass to Routing
+
+    %% Agent 4: Routing
+    Agent4->>Gemini: Analyze Risk
+    Gemini-->>Agent4: Routing Decision
+    
+    alt Low Risk - Auto Approve
+        Agent4->>MongoDB: Mark as Approved
+        Agent4->>Agent5: Pass to Audit
+    else Medium Risk - Review Needed
+        Agent4->>MongoDB: Create Review Task
+        Agent4->>Reviewer: Send Email Notification
+        Agent4->>Agent5: Pass to Audit
+        
+        %% Human Review Loop
+        Reviewer->>Frontend: Access Review Queue
+        Frontend->>API: GET /api/reviews/
+        API->>MongoDB: Fetch Reviews
+        MongoDB-->>API: Review Data
+        API-->>Frontend: Review List
+        Reviewer->>Frontend: Approve/Reject
+        Frontend->>API: POST /api/reviews/{id}/submit/
+        API->>MongoDB: Update Review Status
+        API->>Agent5: Trigger Audit Update
+    else High Risk - Exception
+        Agent4->>MongoDB: Create Exception
+        Agent4->>Reviewer: Send Alert
+        Agent4->>Agent5: Pass to Audit
+    end
+
+    %% Agent 5: Audit
+    Agent5->>MongoDB: Gather All Stage Data
+    Agent5->>Gemini: Generate Audit Summary
+    Gemini-->>Agent5: Audit Report
+    Agent5->>MongoDB: Store Audit Log
+    Agent5->>API: Workflow Complete
+
+    %% Status Update
+    API-->>Frontend: Status Update (WebSocket/Polling)
+    Frontend-->>User: Show Processing Complete
+
+    %% User Views Result
+    User->>Frontend: View Document Status
+    Frontend->>API: GET /api/documents/{id}/
+    API->>MongoDB: Fetch Document Data
+    MongoDB-->>API: Complete Document Info
+    API-->>Frontend: Document Details
+    Frontend-->>User: Display Results

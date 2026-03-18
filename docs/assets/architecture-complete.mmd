@@ -1,0 +1,112 @@
+%% AgentDoc Complete Architecture - 5-Agent System
+%% This diagram shows the complete system architecture with all components
+
+graph TB
+    subgraph "User Layer"
+        USER[👤 End User]
+        REVIEWER[👨‍💼 Reviewer]
+    end
+
+    subgraph "Presentation Layer"
+        LANDING[🎨 Landing Page<br/>HTML5 + CSS3 + JS + GSAP]
+        FRONTEND[⚛️ React Frontend<br/>Vite + React Router + Tailwind]
+    end
+
+    subgraph "API Layer"
+        API[🔌 Django REST API<br/>JWT Authentication]
+        CORS[🔒 CORS Middleware]
+        CSRF[🛡️ CSRF Protection]
+    end
+
+    subgraph "5-Agent System - CrewAI + Gemini"
+        AGENT1[🤖 Agent 1: Classification<br/>Ingestion + Preprocessing + Classification]
+        AGENT2[🤖 Agent 2: Extraction<br/>Structured Data Extraction]
+        AGENT3[🤖 Agent 3: Validation<br/>Business Rules + Risk Scoring]
+        AGENT4[🤖 Agent 4: Routing<br/>Queue Assignment + Exception + Review]
+        AGENT5[🤖 Agent 5: Audit<br/>Immutable Audit Trail]
+    end
+
+    subgraph "AI Services"
+        GEMINI[🧠 Google Gemini<br/>gemini-2.5-flash]
+        OCR[📄 OCR Tools<br/>Tesseract + OpenCV]
+        VECTOR[🔍 Vector Embeddings<br/>sentence-transformers]
+    end
+
+    subgraph "Data Layer"
+        MONGODB[(🗄️ MongoDB Atlas<br/>Documents + Reviews + Audit)]
+        SQLITE[(💾 SQLite<br/>Control Plane)]
+        STORAGE[📦 Local Storage<br/>Uploaded Files]
+    end
+
+    subgraph "External Services"
+        SMTP[📧 Email Notifications<br/>MailHog/SMTP]
+    end
+
+    %% User Interactions
+    USER -->|Browse| LANDING
+    LANDING -->|Launch Demo| FRONTEND
+    USER -->|Upload Document| FRONTEND
+    REVIEWER -->|Review Queue| FRONTEND
+
+    %% Frontend to API
+    FRONTEND -->|HTTP/REST| API
+    API --> CORS
+    API --> CSRF
+
+    %% API to Agents
+    API -->|Trigger Workflow| AGENT1
+
+    %% Agent Workflow (Sequential)
+    AGENT1 -->|Document Type + Quality| AGENT2
+    AGENT2 -->|Extracted Fields| AGENT3
+    AGENT3 -->|Validation Results| AGENT4
+    AGENT4 -->|Routing Decision| AGENT5
+
+    %% Agents to AI Services
+    AGENT1 -.->|Classification| GEMINI
+    AGENT1 -.->|OCR| OCR
+    AGENT2 -.->|Extraction| GEMINI
+    AGENT2 -.->|OCR| OCR
+    AGENT3 -.->|Validation| GEMINI
+    AGENT4 -.->|Routing Logic| GEMINI
+    AGENT5 -.->|Audit Summary| GEMINI
+
+    %% Vector Search
+    AGENT1 -.->|Semantic Search| VECTOR
+    VECTOR -.->|Embeddings| MONGODB
+
+    %% Data Persistence
+    AGENT1 -->|Store Classification| MONGODB
+    AGENT2 -->|Store Extraction| MONGODB
+    AGENT3 -->|Store Validation| MONGODB
+    AGENT4 -->|Store Routing| MONGODB
+    AGENT5 -->|Store Audit| MONGODB
+
+    API -->|User Auth| SQLITE
+    API -->|File Upload| STORAGE
+
+    %% Notifications
+    AGENT4 -.->|Review Needed| SMTP
+    SMTP -.->|Email| REVIEWER
+
+    %% Review Feedback Loop
+    REVIEWER -->|Approve/Reject| FRONTEND
+    FRONTEND -->|Review Decision| API
+    API -->|Update Status| MONGODB
+
+    %% Styling
+    classDef userClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef presentationClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef apiClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef agentClass fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef aiClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef dataClass fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+    classDef externalClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+
+    class USER,REVIEWER userClass
+    class LANDING,FRONTEND presentationClass
+    class API,CORS,CSRF apiClass
+    class AGENT1,AGENT2,AGENT3,AGENT4,AGENT5 agentClass
+    class GEMINI,OCR,VECTOR aiClass
+    class MONGODB,SQLITE,STORAGE dataClass
+    class SMTP externalClass

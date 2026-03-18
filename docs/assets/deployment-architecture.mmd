@@ -1,0 +1,78 @@
+%% Deployment Architecture - Render Free Tier
+
+graph TB
+    subgraph "Internet"
+        USERS[🌐 Users]
+        GITHUB[📦 GitHub Repository]
+    end
+
+    subgraph "Render Platform - Free Tier"
+        subgraph "Static Site Service"
+            LANDING[🎨 Landing Page<br/>Static HTML/CSS/JS<br/>Port: 443]
+        end
+
+        subgraph "Web Service - Frontend"
+            FRONTEND[⚛️ React Frontend<br/>Node 20.x<br/>Vite Preview Server<br/>Port: $PORT]
+            FRONTEND_BUILD[📦 npm run build]
+        end
+
+        subgraph "Web Service - Backend"
+            BACKEND[🐍 Django Backend<br/>Python 3.11<br/>Gunicorn WSGI<br/>Port: $PORT]
+            BACKEND_BUILD[📦 pip install + migrate]
+            WHITENOISE[📄 WhiteNoise<br/>Static Files]
+        end
+    end
+
+    subgraph "External Services - Free Tier"
+        MONGODB[🗄️ MongoDB Atlas<br/>M0 Cluster<br/>512 MB Storage]
+        GEMINI[🧠 Google Gemini<br/>API Key<br/>gemini-2.5-flash]
+    end
+
+    subgraph "Local Storage - Ephemeral"
+        MEDIA[📦 Media Files<br/>/opt/render/project/src/<br/>AgentDoc/backend/media]
+    end
+
+    %% User Flow
+    USERS -->|HTTPS| LANDING
+    USERS -->|HTTPS| FRONTEND
+    USERS -->|HTTPS| BACKEND
+
+    %% Deployment Flow
+    GITHUB -->|Auto Deploy| LANDING
+    GITHUB -->|Auto Deploy| FRONTEND_BUILD
+    GITHUB -->|Auto Deploy| BACKEND_BUILD
+    FRONTEND_BUILD --> FRONTEND
+    BACKEND_BUILD --> BACKEND
+
+    %% Service Communication
+    LANDING -.->|Demo Link| FRONTEND
+    FRONTEND -->|REST API<br/>CORS Enabled| BACKEND
+    BACKEND --> WHITENOISE
+
+    %% External Connections
+    BACKEND -->|Connection String| MONGODB
+    BACKEND -->|API Key| GEMINI
+    BACKEND -->|File Upload| MEDIA
+
+    %% Environment Variables
+    ENV_BACKEND[🔐 Backend Env<br/>GEMINI_API_KEY<br/>MONGODB_URI<br/>DJANGO_SECRET_KEY<br/>USE_LOCAL_STORAGE=1]
+    ENV_FRONTEND[🔐 Frontend Env<br/>VITE_API_BASE]
+
+    ENV_BACKEND -.-> BACKEND
+    ENV_FRONTEND -.-> FRONTEND
+
+    %% Notes
+    NOTE1[⚠️ Free Tier Limits<br/>• Sleep after 15 min<br/>• Cold start: 30-60s<br/>• Ephemeral storage<br/>• 15 min build timeout]
+
+    %% Styling
+    classDef renderService fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef externalService fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef storage fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef config fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef note fill:#ffebee,stroke:#b71c1c,stroke-width:2px
+
+    class LANDING,FRONTEND,BACKEND,FRONTEND_BUILD,BACKEND_BUILD,WHITENOISE renderService
+    class MONGODB,GEMINI externalService
+    class MEDIA storage
+    class ENV_BACKEND,ENV_FRONTEND config
+    class NOTE1 note
