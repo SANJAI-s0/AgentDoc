@@ -1,0 +1,227 @@
+---
+title: AgentDoc — 5-Agent Architecture
+---
+flowchart TD
+    %% ─────────────────────────────────────────
+    %% ENTRY POINT
+    %% ─────────────────────────────────────────
+    subgraph ENTRY["📥  API Entry Point"]
+        direction LR
+        API_CALL["POST /api/documents/\nMultipart upload or presigned MinIO object"]
+        DEDUP["Duplicate Check\nSHA-256 checksum → MongoDB"]
+        STORE["File Storage\nMinIO upload_bytes() or local FS"]
+    end
+
+    API_CALL --> DEDUP --> STORE
+
+    STORE -->|"execute_document_workflow(payload)"| RUNNER
+
+    %% ─────────────────────────────────────────
+    %% RUNNER / ORCHESTRATOR
+    %% ─────────────────────────────────────────
+    subgraph ORCH["🎛️  Workflow Orchestrator"]
+        direction TB
+        RUNNER["runner.py\nexecute_document_workflow()"]
+        WORKFLOW["workflow.py\nDocumentWorkflow.kick_off()"]
+        CREW["crew.py\nDocumentCrewFactory.execute()\n↳ LangChain if GEMINI_API_KEY set\n↳ simulate() as fallback"]
+    end
+
+    RUNNER --> WORKFLOW --> CREW
+
+    %% ─────────────────────────────────────────
+    %% 5 AGENTS — SEQUENTIAL PIPELINE
+    %% ─────────────────────────────────────────
+    CREW -->|"WorkflowState"| A1
+
+    subgraph PIPELINE["🤖  5-Agent Sequential Pipeline"]
+        direction LR
+
+        subgraph A1["Agent 1 — Classification"]
+            direction TB
+            A1_IN["Input: file metadata\ndoc_type_hint · raw_text · mime_type"]
+            A1_P1["① Ingestion Validation\nStorage path · source channel · priority"]
+            A1_P2["② Preprocessing\nOpenCV denoising · Otsu binarization\nLaplacian quality score (threshold 0.7)"]
+            A1_P3["③ Classification\nKeyword map (8 types)\nVector similarity boost\nConfidence threshold 0.85"]
+            A1_OUT["Output:\nIngestionOutput\nPreprocessingOutput\nClassificationOutput"]
+            A1_IN --> A1_P1 --> A1_P2 --> A1_P3 --> A1_OUT
+        end
+
+        subgraph A2["Agent 2 — Extraction"]
+            direction TB
+            A2_IN["Input: doc_type · raw_text\nrequired_fields from PolicyLookupTool"]
+            A2_P1["① Policy Lookup\n8 document types → required fields\nRisk threshold per type"]
+            A2_P2["② Field Extraction\nRegex: dates · amounts · currencies\nKeyword line matching\nHandwritten field detection"]
+            A2_P3["③ Confidence Mapping\nPresent field → 0.78\nMissing field → 0.45"]
+            A2_OUT["Output:\nExtractionOutput\nFieldExtraction[]\nconfidence_map · missing_fields"]
+            A2_IN --> A2_P1 --> A2_P2 --> A2_P3 --> A2_OUT
+        end
+
+        subgraph A3["Agent 3 — Validation"]
+            direction TB
+            A3_IN["Input: ExtractionOutput\nClassificationOutput · image_quality_score"]
+            A3_P1["① Required Field Check\nMissing fields → severity HIGH"]
+            A3_P2["② Risk Score Calculation\nBase 0.12\n+ handwritten penalty 0.12\n+ confidence penalty 0.18\n+ missing field penalty (×0.12 each)\n+ quality penalty 0.14"]
+            A3_P3["③ Threshold Evaluation\nrisk > policy threshold → needs_review\nrisk > 0.75 → fraud escalation"]
+            A3_OUT["Output:\nValidationOutput\nValidationCheck[]\nrisk_score · overall_status"]
+            A3_IN --> A3_P1 --> A3_P2 --> A3_P3 --> A3_OUT
+        end
+
+        subgraph A4["Agent 4 — Routing"]
+            direction TB
+            A4_IN["Input: ValidationOutput\nrisk_score · needs_review flag"]
+            A4_P1["① Queue Assignment\nrisk ≤ threshold → auto_approve (SLA 5 min)\nneeds_review → operations_review (SLA 30 min)\nrisk > 0.75 → fraud_review (SLA 20 min)"]
+            A4_P2["② Exception Handling\nlow_quality · missing_data\npolicy_conflict · suspected_fraud\nEscalation level: low / medium / high"]
+            A4_P3["③ Review Preparation\nAssign team · set SLA\nBuild reviewer instructions"]
+            A4_OUT["Output:\nRoutingOutput\nExceptionOutput (if needed)\nReviewOutput"]
+            A4_IN --> A4_P1 --> A4_P2 --> A4_P3 --> A4_OUT
+        end
+
+        subgraph A5["Agent 5 — Audit"]
+            direction TB
+            A5_IN["Input: All prior outputs\nFull WorkflowState"]
+            A5_P1["① Timeline Construction\n9 stages: ingestion → preprocessing\n→ classification → extraction\n→ validation → routing → review → audit"]
+            A5_P2["② Searchable Summary\n'{doc_type} processed with status\n{workflow_status} and risk {risk_score}'"]
+            A5_P3["③ Final Status\ncompleted · pending_review · rejected"]
+            A5_OUT["Output:\nAuditOutput\nFinal WorkflowState"]
+            A5_IN --> A5_P1 --> A5_P2 --> A5_P3 --> A5_OUT
+        end
+
+        A1 -->|"ClassificationOutput\nnext_action: extract"| A2
+        A2 -->|"ExtractionOutput\nnext_action: validate"| A3
+        A3 -->|"ValidationOutput\nnext_action: route"| A4
+        A4 -->|"RoutingOutput\nnext_action: complete"| A5
+    end
+
+    %% ─────────────────────────────────────────
+    %% MANUAL REVIEW BRANCH
+    %% ─────────────────────────────────────────
+    A1 -->|"next_action: manual_review\n(quality < 0.7 or conf < 0.85)"| MANUAL
+    A3 -->|"next_action: manual_review\n(issues present)"| MANUAL
+    A4 -->|"next_action: exception\n(risk > 0.75)"| MANUAL
+
+    subgraph MANUAL["👤  Human Review Branch"]
+        direction TB
+        MR1["operations_review queue\nMedium risk · validation issues"]
+        MR2["fraud_review queue\nHigh risk > 0.75 · suspected fraud"]
+        MR3["Reviewer Actions\napprove · reject · request_changes"]
+    end
+
+    %% ─────────────────────────────────────────
+    %% TOOLS
+    %% ─────────────────────────────────────────
+    subgraph TOOLS["🛠️  Agent Tools  (document_tools.py)"]
+        direction LR
+
+        subgraph T_OCR["OCRTool"]
+            direction TB
+            T1["Tesseract OCR (primary)"]
+            T2["PaddleOCR (handwritten)"]
+            T3["Best-confidence selection"]
+        end
+
+        subgraph T_PRE["PreprocessTool"]
+            direction TB
+            T4["OpenCV fastNlMeansDenoising"]
+            T5["Otsu threshold binarization"]
+            T6["Laplacian variance quality score"]
+        end
+
+        subgraph T_POL["PolicyLookupTool"]
+            direction TB
+            T7["8 document type rules\ninvoice · kyc_form · receipt\ninsurance_claim · shipping_document\nloan_application · contract\nhandwritten_form"]
+        end
+
+        subgraph T_FLD["FieldExtractionTool"]
+            direction TB
+            T8["Regex: dates (YYYY-MM-DD)\nAmounts / currencies"]
+            T9["Keyword line matching\nConfidence map output"]
+        end
+
+        subgraph T_SRCH["SearchKnowledgeTool"]
+            direction TB
+            T10["MiniLM-L6-v2 embeddings\n165-dim cosine vectors"]
+            T11["MongoDB Atlas vector search\nLocal cosine fallback"]
+        end
+    end
+
+    A1 -.->|"uses"| T_OCR & T_PRE
+    A2 -.->|"uses"| T_POL & T_FLD
+    A1 -.->|"uses"| T_SRCH
+    A3 -.->|"uses"| T_POL
+
+    %% ─────────────────────────────────────────
+    %% POST-WORKFLOW PERSISTENCE
+    %% ─────────────────────────────────────────
+    A5 -->|"WorkflowState"| PERSIST
+
+    subgraph PERSIST["💾  Post-Workflow  (runner.py)"]
+        direction LR
+
+        subgraph P_MONGO["MongoDB Persistence"]
+            direction TB
+            PM1["documents ← status · doc_type · summary"]
+            PM2["pages ← OCR text per page"]
+            PM3["extractions ← structured fields"]
+            PM4["validation_results ← checks · risk"]
+            PM5["reviews ← team · SLA · instructions"]
+            PM6["audit_logs ← full timeline"]
+        end
+
+        subgraph P_VEC["Vector Embedding"]
+            direction TB
+            PV1["update_document_embedding()\nMiniLM-L6-v2 encode searchable_summary"]
+            PV2["165-dim cosine vector\nStored on document record"]
+        end
+
+        subgraph P_SIG["Django Signals"]
+            direction TB
+            PS1["agent_stage_completed signal\nEmitted for each of 9 stages"]
+            PS2["handle_agent_stage_completed()\n→ append_audit_log per stage"]
+        end
+
+        subgraph P_REV["Review Trigger"]
+            direction TB
+            PR1["if review_required == True\ntrigger_review_workflow()"]
+            PR2["Upsert review record\nUpdate document → pending_review"]
+            PR3["send_review_email()\nReviewer portal deep-link"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% LLM INTEGRATION
+    %% ─────────────────────────────────────────
+    subgraph LLM["🧠  LLM Integration  (LangChain)"]
+        direction LR
+        LLM1["ChatGoogleGenerativeAI\ngemini-2.5-flash · temperature=0.1"]
+        LLM2["CLASSIFICATION_PROMPT\nEXTRACTION_PROMPT\nVALIDATION_PROMPT\nROUTING_PROMPT\nAUDIT_PROMPT"]
+        LLM3["Fallback: simulate()\nif no GEMINI_API_KEY\nor LangChain error"]
+    end
+
+    CREW -.->|"LangChain ChatGoogleGenerativeAI"| LLM
+
+    %% ─────────────────────────────────────────
+    %% STYLES
+    %% ─────────────────────────────────────────
+    classDef entryNode   fill:#1d4ed8,stroke:#3b82f6,color:#fff
+    classDef orchNode    fill:#4c1d95,stroke:#7c3aed,color:#e9d5ff
+    classDef agent1Node  fill:#1e3a8a,stroke:#3b82f6,color:#bfdbfe
+    classDef agent2Node  fill:#3b0764,stroke:#8b5cf6,color:#ddd6fe
+    classDef agent3Node  fill:#78350f,stroke:#f59e0b,color:#fef3c7
+    classDef agent4Node  fill:#7f1d1d,stroke:#ef4444,color:#fecaca
+    classDef agent5Node  fill:#14532d,stroke:#22c55e,color:#dcfce7
+    classDef toolNode    fill:#164e63,stroke:#0891b2,color:#cffafe
+    classDef persistNode fill:#1e293b,stroke:#475569,color:#e2e8f0
+    classDef llmNode     fill:#312e81,stroke:#6366f1,color:#e0e7ff
+    classDef manualNode  fill:#4a1942,stroke:#d946ef,color:#fae8ff
+
+    class API_CALL,DEDUP,STORE entryNode
+    class RUNNER,WORKFLOW,CREW orchNode
+    class A1_IN,A1_P1,A1_P2,A1_P3,A1_OUT agent1Node
+    class A2_IN,A2_P1,A2_P2,A2_P3,A2_OUT agent2Node
+    class A3_IN,A3_P1,A3_P2,A3_P3,A3_OUT agent3Node
+    class A4_IN,A4_P1,A4_P2,A4_P3,A4_OUT agent4Node
+    class A5_IN,A5_P1,A5_P2,A5_P3,A5_OUT agent5Node
+    class T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11 toolNode
+    class PM1,PM2,PM3,PM4,PM5,PM6,PV1,PV2,PS1,PS2,PR1,PR2,PR3 persistNode
+    class LLM1,LLM2,LLM3 llmNode
+    class MR1,MR2,MR3 manualNode

@@ -1,0 +1,187 @@
+---
+title: AgentDoc — System Architecture
+---
+flowchart TD
+    %% ─────────────────────────────────────────
+    %% CLIENT LAYER
+    %% ─────────────────────────────────────────
+    subgraph CLIENT["🖥️  CLIENT LAYER"]
+        direction LR
+        SPA["Browser SPA\nVanilla JS · Hash Router"]
+        PG_DASH["Dashboard\nStats · Recent Docs"]
+        PG_DOCS["Documents\nUpload · List · Detail"]
+        PG_REV["Reviews\nQueue · Actions"]
+        PG_AUTH["Auth Pages\nLogin · Signup"]
+        EXT["External Clients\nMobile · Email · API"]
+    end
+
+    %% ─────────────────────────────────────────
+    %% DJANGO BACKEND
+    %% ─────────────────────────────────────────
+    subgraph BACKEND["⚙️  DJANGO BACKEND  (Python 3.11 · Django 4.2 · Gunicorn · WhiteNoise)"]
+        direction LR
+
+        subgraph MW["Middleware Stack"]
+            direction TB
+            MW1["SecurityMiddleware"]
+            MW2["WhiteNoise (static files)"]
+            MW3["CorsMiddleware"]
+            MW4["CsrfViewMiddleware"]
+            MW5["JWTAuthentication (SimpleJWT)"]
+            MW6["ClickjackingMiddleware"]
+        end
+
+        subgraph API["apps.api  (Django REST Framework)"]
+            direction TB
+            EP_AUTH["POST /auth/signup · login · logout\nGET  /auth/me · /auth/csrf · /auth/refresh"]
+            EP_DOCS["POST /documents  (upload)\nGET | PATCH | DELETE /documents/:id\nGET /documents/:id/status · /extraction"]
+            EP_REV["GET  /reviews\nPOST /reviews/:id/action · /submit\nPOST /trigger-review"]
+            EP_SRCH["GET  /search · /search/semantic\nGET  /audit/:id · /dashboard · /health"]
+        end
+
+        subgraph AGENTS["apps.agents  (AI Core)"]
+            direction TB
+            RUNNER["runner.py\nexecute_document_workflow()"]
+            WORKFLOW["workflow.py\nDocumentWorkflow.kick_off()"]
+            CREW["crew.py\nDocumentCrewFactory.execute()"]
+            PROMPTS["prompts/library.py\n5-Agent System Prompts"]
+            TOOLS["tools/document_tools.py\nOCR · Policy · Field · Search"]
+            SCHEMAS["schemas.py\nPydantic WorkflowState"]
+            SIGNALS["signals.py\nDjango Signal Bus"]
+        end
+
+        subgraph REVIEWS["apps.reviews"]
+            direction TB
+            RV_SVC["trigger_review_workflow()\nsend_review_notification()"]
+        end
+
+        subgraph AUTH_APP["apps.core · Django Auth"]
+            direction TB
+            AUTH1["SQLite — Django Users\nJWT Access 60 min · Refresh 7 days"]
+            AUTH2["RBAC: customer · reviewer · admin\nCSRF · Session protection"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% SERVICE LAYER
+    %% ─────────────────────────────────────────
+    subgraph SERVICES["🔧  SERVICE LAYER"]
+        direction LR
+
+        subgraph MONGO_SVC["MongoService"]
+            direction TB
+            MS1["insert / find / update / upsert / delete"]
+            MS2["append_audit_log()"]
+            MS3["Collections: documents · pages\nextractions · reviews · audit_logs · users"]
+        end
+
+        subgraph VS_SVC["VectorSearchService"]
+            direction TB
+            VS1["embed_text()  — MiniLM-L6-v2"]
+            VS2["semantic_search()  — Atlas / local cosine"]
+            VS3["update_document_embedding()\nensure_indexes()  — 165-dim cosine"]
+        end
+
+        subgraph MINIO_SVC["MinioStorage"]
+            direction TB
+            MN1["upload_bytes() · download_bytes()"]
+            MN2["presigned_put_url()  30 min\npresigned_get_url()  120 min"]
+            MN3["stat() · delete()  — S3-compatible"]
+        end
+
+        subgraph NOTIF_SVC["NotificationService"]
+            direction TB
+            NT1["send_review_email(to, doc_id, rev_id)"]
+            NT2["Django send_mail → SMTP\nReview portal deep-link in body"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% INFRASTRUCTURE LAYER
+    %% ─────────────────────────────────────────
+    subgraph INFRA["🗄️  INFRASTRUCTURE LAYER"]
+        direction LR
+
+        subgraph DB_SQLITE["SQLite"]
+            direction TB
+            SQ1["control_plane.sqlite3\nDjango auth · sessions · admin"]
+        end
+
+        subgraph DB_MONGO["MongoDB 7"]
+            direction TB
+            MDB1["documents · pages · extractions"]
+            MDB2["validation_results · reviews · audit_logs"]
+            MDB3["Vector index — cosine · 165-dim"]
+        end
+
+        subgraph OBJ_STORE["MinIO / Local FS"]
+            direction TB
+            OBJ1["S3-compatible object store\nBucket: documents"]
+            OBJ2["incoming/{doc_id}/{filename}\nUSE_LOCAL_STORAGE toggle"]
+        end
+
+        subgraph AI_INFRA["Google Gemini AI"]
+            direction TB
+            AI1["gemini-2.5-flash (default)\nLangChain ChatGoogleGenerativeAI"]
+            AI2["temperature=0.1\nGEMINI_API_KEY required"]
+        end
+
+        subgraph SMTP_INFRA["SMTP / MailHog"]
+            direction TB
+            SM1["Dev: MailHog :1025 · UI :8025\nProd: external SMTP provider"]
+        end
+    end
+
+    %% ─────────────────────────────────────────
+    %% DEPLOYMENT LAYER
+    %% ─────────────────────────────────────────
+    subgraph DEPLOY["🚀  DEPLOYMENT"]
+        direction LR
+        D1["Docker Compose (Dev)\nagentdoc · mongodb · minio · mailhog"]
+        D2["Production Dockerfile\nMulti-stage · non-root · Gunicorn"]
+        D3["Render.com\nrender.yaml · render-start.sh"]
+        D4["Security Hardening\nHSTS · SSL redirect · XSS filter · CSRF"]
+    end
+
+    %% ─────────────────────────────────────────
+    %% CONNECTIONS
+    %% ─────────────────────────────────────────
+    SPA --> PG_DASH & PG_DOCS & PG_REV & PG_AUTH
+    SPA -->|"HTTP/REST · JWT Bearer"| MW
+    EXT -->|"HTTP/REST · JWT Bearer"| MW
+    MW --> API
+    EP_DOCS -->|"execute_document_workflow()"| RUNNER
+    EP_REV --> RV_SVC
+    RUNNER --> WORKFLOW --> CREW
+    CREW --> PROMPTS & TOOLS & SCHEMAS
+    RUNNER --> SIGNALS
+    RUNNER -->|"review_required == true"| RV_SVC
+    RV_SVC --> NOTIF_SVC
+
+    API --> MONGO_SVC & VS_SVC & MINIO_SVC
+    AGENTS --> MONGO_SVC & VS_SVC & MINIO_SVC
+    REVIEWS --> MONGO_SVC & NOTIF_SVC
+
+    MONGO_SVC --> DB_MONGO
+    VS_SVC --> DB_MONGO
+    MINIO_SVC --> OBJ_STORE
+    NOTIF_SVC --> SMTP_INFRA
+    AUTH_APP --> DB_SQLITE
+    CREW -->|"LangChain"| AI_INFRA
+
+    %% ─────────────────────────────────────────
+    %% STYLES
+    %% ─────────────────────────────────────────
+    classDef clientNode   fill:#1d4ed8,stroke:#3b82f6,color:#fff
+    classDef backendNode  fill:#1e293b,stroke:#475569,color:#e2e8f0
+    classDef agentNode    fill:#4c1d95,stroke:#7c3aed,color:#e9d5ff
+    classDef serviceNode  fill:#164e63,stroke:#0891b2,color:#cffafe
+    classDef infraNode    fill:#78350f,stroke:#f59e0b,color:#fef3c7
+    classDef deployNode   fill:#14532d,stroke:#22c55e,color:#dcfce7
+
+    class SPA,PG_DASH,PG_DOCS,PG_REV,PG_AUTH,EXT clientNode
+    class EP_AUTH,EP_DOCS,EP_REV,EP_SRCH,MW1,MW2,MW3,MW4,MW5,MW6,AUTH1,AUTH2,RV_SVC backendNode
+    class RUNNER,WORKFLOW,CREW,PROMPTS,TOOLS,SCHEMAS,SIGNALS agentNode
+    class MS1,MS2,MS3,VS1,VS2,VS3,MN1,MN2,MN3,NT1,NT2 serviceNode
+    class SQ1,MDB1,MDB2,MDB3,OBJ1,OBJ2,AI1,AI2,SM1 infraNode
+    class D1,D2,D3,D4 deployNode
