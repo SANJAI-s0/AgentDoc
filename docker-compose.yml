@@ -1,37 +1,51 @@
 ﻿version: "3.9"
 
+# ─────────────────────────────────────────────────────────────
+# AgentDoc — Local Development Stack
+#
+# Services:
+#   agentdoc   Django app (backend + integrated frontend)
+#   mongodb    Document database
+#   minio      S3-compatible object storage (optional)
+#   mailhog    SMTP catch-all for email testing
+#
+# Usage:
+#   docker-compose up                  # start all services
+#   docker-compose up agentdoc mongodb # start without minio/mailhog
+#   docker-compose logs -f agentdoc    # tail app logs
+# ─────────────────────────────────────────────────────────────
+
 services:
-  django-api:
+
+  # ── Main application ──────────────────────────────────────
+  agentdoc:
     build:
       context: ./backend
-    container_name: agentdoc-django
+      dockerfile: Dockerfile
+    container_name: agentdoc
     entrypoint: ["/bin/sh", "/app/entrypoint.sh"]
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
     env_file:
       - .env.docker
+    environment:
+      - PYTHONPATH=/app
     volumes:
-      - ./backend:/app
+      - ./backend:/app                  # live reload in dev
+      - agentdoc_media:/app/media       # uploaded files persist
     ports:
       - "8000:8000"
     depends_on:
-      - mongodb
-      - minio
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  react-web:
-    build:
-      context: ./frontend
-    container_name: agentdoc-react
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    environment:
-      VITE_API_BASE: http://localhost:8000/api
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
-    depends_on:
-      - django-api
-
+  # ── MongoDB ───────────────────────────────────────────────
   mongodb:
     image: mongo:7
     container_name: agentdoc-mongodb
@@ -39,8 +53,15 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./mongodb_data:/data/db
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
+  # ── MinIO (optional — only needed when USE_LOCAL_STORAGE=0) ──
   minio:
     image: minio/minio:latest
     container_name: agentdoc-minio
@@ -49,26 +70,43 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console → http://localhost:9001
     volumes:
-      - ./minio_data:/data
+      - minio_data:/data
+    restart: unless-stopped
+    profiles:
+      - minio          # only starts with: docker-compose --profile minio up
 
-  createbucket:
+  # Auto-create the documents bucket on first run
+  minio-init:
     image: minio/mc:latest
     depends_on:
       - minio
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin) do echo 'waiting for minio'; sleep 1; done;
-      /usr/bin/mc mb local/documents || true;
-      /usr/bin/mc anonymous set private local/documents || true;
-      exit 0;
+        until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin 2>/dev/null; do
+          echo 'Waiting for MinIO...'; sleep 2;
+        done;
+        /usr/bin/mc mb local/documents --ignore-existing;
+        /usr/bin/mc anonymous set private local/documents;
+        echo 'MinIO bucket ready.';
       "
+    profiles:
+      - minio
 
+  # ── MailHog (SMTP catch-all for dev email testing) ────────
   mailhog:
     image: mailhog/mailhog:latest
     container_name: agentdoc-mailhog
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI → http://localhost:8025
+    restart: unless-stopped
+    profiles:
+      - mail
+
+volumes:
+  mongodb_data:
+  minio_data:
+  agentdoc_media:

@@ -1,69 +1,99 @@
-# Render Blueprint for AgentDoc
-# Free tier deployment - Single service with integrated frontend
+## Render Blueprint — AgentDoc
+## Single integrated service (Django backend + vanilla JS frontend)
+## Docs: https://render.com/docs/blueprint-spec
 
 services:
-  # Backend with Integrated Frontend
   - type: web
     name: agentdoc
-    env: python
+    runtime: python
     region: oregon
     plan: free
+    rootDir: backend
+
     buildCommand: |
-      cd backend
       pip install --upgrade pip
       pip install -r requirements.txt
-      python manage.py collectstatic --no-input
-      python manage.py migrate
+      python manage.py collectstatic --noinput
+      python manage.py migrate --noinput
+
     startCommand: |
-      cd backend
       python manage.py seed_demo --skip-if-present
-      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+      exec gunicorn config.wsgi:application \
+        --bind 0.0.0.0:$PORT \
+        --workers ${GUNICORN_WORKERS:-2} \
+        --timeout ${GUNICORN_TIMEOUT:-120} \
+        --access-logfile - \
+        --error-logfile -
+
+    healthCheckPath: /api/health/
+
     envVars:
+      # ── Django core ──────────────────────────────────────
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
         value: "0"
       - key: DJANGO_ALLOWED_HOSTS
-        sync: false
+        sync: false          # set to: your-app.onrender.com
       - key: DJANGO_CORS_ALLOWED_ORIGINS
-        sync: false
+        sync: false          # set to: https://your-app.onrender.com
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: MONGODB_URI
-        sync: false
-      - key: MONGODB_DB_NAME
-        value: agentdoc
-      - key: USE_LOCAL_STORAGE
-        value: "1"
-      - key: MEDIA_ROOT
-        value: /opt/render/project/src/backend/media
-      - key: DJANGO_SESSION_COOKIE_SECURE
-        value: "1"
-      - key: DJANGO_CSRF_COOKIE_SECURE
-        value: "1"
-      - key: DJANGO_SESSION_COOKIE_HTTPONLY
-        value: "1"
-      - key: DJANGO_CSRF_COOKIE_HTTPONLY
-        value: "1"
+        sync: false          # set to: https://your-app.onrender.com
       - key: DJANGO_USE_X_FORWARDED_HOST
         value: "1"
       - key: DJANGO_TRUST_X_FORWARDED_PROTO
         value: "1"
-      - key: PYTHON_VERSION
-        value: "3.11.0"
-      - key: BACKEND_URL
-        sync: false
-      - key: REVIEW_PORTAL_URL
-        sync: false
-      - key: AGENT_INTERNAL_TOKEN
-        generateValue: true
+
+      # ── Cookies (secure in production) ───────────────────
+      - key: DJANGO_SESSION_COOKIE_SECURE
+        value: "1"
+      - key: DJANGO_CSRF_COOKIE_SECURE
+        value: "1"
+      - key: DJANGO_SESSION_COOKIE_SAMESITE
+        value: "Lax"
+      - key: DJANGO_CSRF_COOKIE_SAMESITE
+        value: "Lax"
+
+      # ── MongoDB ───────────────────────────────────────────
+      - key: MONGODB_URI
+        sync: false          # set to your Atlas connection string
+      - key: MONGODB_DB_NAME
+        value: agentdoc
+      - key: MONGODB_VECTOR_INDEX
+        value: documents_vector_index
+      - key: MONGODB_ENABLE_VECTOR_SEARCH
+        value: "1"
+      - key: EMBEDDING_VECTOR_DIMENSIONS
+        value: "165"
+
+      # ── Storage ───────────────────────────────────────────
+      - key: USE_LOCAL_STORAGE
+        value: "1"
+      - key: MEDIA_ROOT
+        value: /opt/render/project/src/backend/media
+
+      # ── AI ────────────────────────────────────────────────
+      - key: GEMINI_API_KEY
+        sync: false          # required — get from aistudio.google.com
+      - key: GEMINI_MODEL
+        value: gemini/gemini-2.5-flash
+
+      # ── JWT ───────────────────────────────────────────────
       - key: JWT_ACCESS_MINUTES
         value: "60"
       - key: JWT_REFRESH_DAYS
         value: "7"
-      - key: RATE_LIMIT_PER_MINUTE
-        value: "60"
-      - key: LOG_LEVEL
-        value: "INFO"
+
+      # ── Email (optional) ──────────────────────────────────
+      - key: DEFAULT_FROM_EMAIL
+        value: ops@agentdoc.local
+      - key: REVIEW_PORTAL_URL
+        sync: false          # set to: https://your-app.onrender.com/app/#reviews
+
+      # ── Runtime ───────────────────────────────────────────
+      - key: PYTHON_VERSION
+        value: "3.11.11"
+      - key: GUNICORN_WORKERS
+        value: "2"
+      - key: GUNICORN_TIMEOUT
+        value: "120"

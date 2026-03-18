@@ -5,6 +5,8 @@ on:
   workflow_run:
     workflows:
       - CI
+    branches:
+      - main
     types:
       - completed
 
@@ -12,35 +14,41 @@ permissions:
   contents: read
 
 jobs:
-  deploy-render:
-    name: Trigger Render Deploy
+  # ─────────────────────────────────────────────
+  # Deploy single integrated service to Render
+  # ─────────────────────────────────────────────
+  deploy:
+    name: Deploy to Render
     runs-on: ubuntu-latest
     if: >-
-      ((github.event_name == 'workflow_dispatch') ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) &&
-      secrets.RENDER_BACKEND_DEPLOY_HOOK != '' &&
-      secrets.RENDER_FRONTEND_DEPLOY_HOOK != ''
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
 
     steps:
-      - name: Trigger backend deploy
-        run: curl -fsS -X POST "$RENDER_BACKEND_DEPLOY_HOOK"
-        env:
-          RENDER_BACKEND_DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
-
-      - name: Trigger frontend deploy
-        run: curl -fsS -X POST "$RENDER_FRONTEND_DEPLOY_HOOK"
-        env:
-          RENDER_FRONTEND_DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
-
-  missing-render-secrets:
-    name: Render Secrets Missing
-    runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      (secrets.RENDER_BACKEND_DEPLOY_HOOK == '' || secrets.RENDER_FRONTEND_DEPLOY_HOOK == '')
-
-    steps:
-      - name: Fail with setup instructions
+      - name: Validate deploy hook secret
         run: |
-          echo "RENDER_BACKEND_DEPLOY_HOOK and RENDER_FRONTEND_DEPLOY_HOOK secrets are required."
-          exit 1
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK secret is not set."
+            echo "Go to: GitHub repo → Settings → Secrets → Actions → New secret"
+            echo "Get the hook URL from: Render dashboard → agentdoc service → Settings → Deploy Hook"
+            exit 1
+          fi
+
+      - name: Trigger Render deploy
+        run: |
+          response=$(curl -fsS -w "\n%{http_code}" -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | head -1)
+          echo "Response: $body"
+          echo "HTTP status: $http_code"
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "::error::Render deploy hook returned HTTP $http_code"
+            exit 1
+          fi
+
+      - name: Deploy triggered
+        run: |
+          echo "Render deploy triggered successfully."
+          echo "Monitor progress at: https://dashboard.render.com"
