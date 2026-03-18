@@ -321,6 +321,12 @@ python manage.py runserver
 | http://localhost:8000/api/ | REST API |
 | http://localhost:8000/admin/ | Django admin |
 
+
+### 5. MinIO (Object Storage)
+```powershell
+& "$env:USERPROFILE\go\bin\minio.exe" server C:\minio-data --console-address ":9001"
+```
+
 ---
 
 ## Environment Variables
