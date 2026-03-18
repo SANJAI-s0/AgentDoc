@@ -1,0 +1,150 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgentDoc - AI-Powered Document Intelligence System">
+    <title>AgentDoc - Document Intelligence</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/app-bundle.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <circle cx="12" cy="15" r="3"></circle>
+                </svg>
+                <span class="brand-text">AgentDoc</span>
+            </div>
+            <ul class="nav-menu" id="navMenu" style="display:none;">
+                <li><a href="#dashboard" data-page="dashboard">Dashboard</a></li>
+                <li><a href="#documents" data-page="documents">Documents</a></li>
+                <li><a href="#reviews" data-page="reviews" id="reviewsLink" style="display:none;">Reviews</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+            <div class="user-info" id="userInfo"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Login Page -->
+            <div id="loginPage" class="page active">
+                <div class="login-container">
+                    <h1>Welcome to AgentDoc</h1>
+                    <p class="subtitle">AI-Powered Document Intelligence System</p>
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                        <div id="loginError" class="error-message"></div>
+                    </form>
+                    <div class="auth-toggle">
+                        <p>Don't have an account? <a href="#signup" class="show-signup">Sign up here</a></p>
+                    </div>
+                    <div class="demo-credentials">
+                        <h3>Demo Credentials</h3>
+                        <div class="credential-box"><strong>Customer:</strong> customer_demo / DemoPass123!</div>
+                        <div class="credential-box"><strong>Reviewer:</strong> reviewer_demo / DemoPass123!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signup Page -->
+            <div id="signupPage" class="page">
+                <div class="login-container">
+                    <h1>Create Account</h1>
+                    <p class="subtitle">Join AgentDoc Document Intelligence</p>
+                    <form id="signupForm" class="login-form">
+                        <div class="form-group">
+                            <label for="signupUsername">Username</label>
+                            <input type="text" id="signupUsername" name="username" required minlength="3">
+                        </div>
+                        <div class="form-group">
+                            <label for="signupEmail">Email</label>
+                            <input type="email" id="signupEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupDisplayName">Display Name (Optional)</label>
+                            <input type="text" id="signupDisplayName" name="displayName">
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPassword">Password</label>
+                            <input type="password" id="signupPassword" name="password" required minlength="8">
+                            <small>Minimum 8 characters</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupConfirmPassword">Confirm Password</label>
+                            <input type="password" id="signupConfirmPassword" name="confirmPassword" required minlength="8">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                        <div id="signupError" class="error-message"></div>
+                    </form>
+                    <div class="auth-toggle">
+                        <p>Already have an account? <a href="#login" class="show-login">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page">
+                <h1>Dashboard</h1>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-number" id="totalDocs">0</div><div class="stat-label">Total Documents</div></div>
+                    <div class="stat-card"><div class="stat-number" id="processingDocs">0</div><div class="stat-label">Processing</div></div>
+                    <div class="stat-card"><div class="stat-number" id="completedDocs">0</div><div class="stat-label">Completed</div></div>
+                    <div class="stat-card"><div class="stat-number" id="reviewDocs">0</div><div class="stat-label">Needs Review</div></div>
+                </div>
+                <div class="recent-documents">
+                    <h2>Recent Documents</h2>
+                    <div id="recentDocsList"></div>
+                </div>
+            </div>
+
+            <!-- Documents Page -->
+            <div id="documentsPage" class="page">
+                <h1>Documents</h1>
+                <div class="upload-section">
+                    <h2>Upload Document</h2>
+                    <form id="uploadForm" class="upload-form">
+                        <div class="file-upload">
+                            <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <label for="fileInput" class="file-label"><span id="fileName">Choose a file...</span></label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Upload & Process</button>
+                        <div id="uploadProgress" class="progress-bar" style="display:none;">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div id="uploadStatus" class="status-message"></div>
+                    </form>
+                </div>
+                <div class="documents-list">
+                    <h2>All Documents</h2>
+                    <div id="documentsList"></div>
+                </div>
+            </div>
+
+            <!-- Reviews Page -->
+            <div id="reviewsPage" class="page">
+                <h1>Review Queue</h1>
+                <div id="reviewsList"></div>
+            </div>
+        </div>
+    </main>
+
+    <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+    <script src="{% static 'js/app-bundle.js' %}"></script>
+</body>
+</html>

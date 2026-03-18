@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgentDoc - Agentic AI Document Intelligence System for Autonomous Workflow Automation">
+    <meta name="keywords" content="AI, Document Processing, OCR, Automation, Machine Learning">
+    <title>AgentDoc - AI-Powered Document Intelligence</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/sections.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <circle cx="12" cy="15" r="3"></circle>
+                </svg>
+                <span class="brand-text">AgentDoc</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#workflow">Workflow</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#demo">Demo</a></li>
+            </ul>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Intelligent Document Processing<br>Powered by <span class="gradient-text">Agentic AI</span></h1>
+                <p class="hero-subtitle">Automate complex document workflows with autonomous AI agents. Extract, validate, and route documents with precision and speed.</p>
+                <div class="hero-buttons">
+                    <a href="#demo" class="btn btn-primary">Try Demo</a>
+                    <a href="#features" class="btn btn-secondary">Learn More</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">99.5%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">10x</div>
+                        <div class="stat-label">Faster Processing</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Cost Reduction</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="document-stack">
+                    <div class="doc-card doc-1"></div>
+                    <div class="doc-card doc-2"></div>
+                    <div class="doc-card doc-3"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Statement -->
+    <section class="problem-section">
+        <div class="container">
+            <h2 class="section-title">The Challenge</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">📄</div>
+                    <h3>Document Chaos</h3>
+                    <p>Organizations handle KYC forms, invoices, insurance claims, contracts, and handwritten documents in inconsistent formats.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">⏱️</div>
+                    <h3>Manual Delays</h3>
+                    <p>Manual processing leads to bottlenecks, human errors, and high operational costs.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">⚠️</div>
+                    <h3>Compliance Risks</h3>
+                    <p>Inconsistent validation and lack of audit trails create regulatory and compliance vulnerabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Autonomous AI Capabilities</h2>
+            <p class="section-subtitle">Beyond simple OCR - intelligent decision-making at every stage</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>5-Agent System</h3>
+                    <p>Specialized AI agents work in sequence: Classification, Extraction, Validation, Routing, and Audit for complete workflow automation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">�</div>
+                    <h3>Structured Extraction</h3>
+                    <p>Extract structured data from messy scans, handwritten forms, and varied formats using advanced AI reasoning.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>Intelligent Validation</h3>
+                    <p>Validate information against predefined business rules with semantic understanding and confidence scoring.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Smart Routing</h3>
+                    <p>Automatically route documents through customizable workflow pipelines based on risk and confidence levels.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Human-in-the-Loop</h3>
+                    <p>Seamless collaboration with role-based access for reviewers when AI needs human judgment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Semantic Search</h3>
+                    <p>Vector-based search to find relevant documents instantly using natural language queries.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow Section -->
+    <section id="workflow" class="workflow-section">
+        <div class="container">
+            <h2 class="section-title">5-Agent Workflow Pipeline</h2>
+            <p class="section-subtitle">Streamlined autonomous processing with intelligent decision-making</p>
+            <div class="workflow-timeline">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Classification Agent</h3>
+                        <p>Automatically identifies document type (invoice, KYC, contract, etc.) with confidence scoring</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Extraction Agent</h3>
+                        <p>Extracts structured data fields using AI-powered OCR and natural language understanding</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Validation Agent</h3>
+                        <p>Validates extracted data against business rules, formats, and semantic consistency checks</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Routing Agent</h3>
+                        <p>Routes documents to auto-approve, human review, or exception handling based on confidence and risk</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Audit Agent</h3>
+                        <p>Creates immutable audit trail of all decisions, changes, and actions for compliance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture-section">
+        <div class="container">
+            <h2 class="section-title">Modern Tech Stack</h2>
+            <div class="tech-grid">
+                <div class="tech-category">
+                    <h3>Frontend</h3>
+                    <ul class="tech-list">
+                        <li>React + Vite</li>
+                        <li>React Router</li>
+                        <li>Tailwind CSS</li>
+                        <li>React Query</li>
+                    </ul>
+                </div>
+                <div class="tech-category">
+                    <h3>Backend</h3>
+                    <ul class="tech-list">
+                        <li>Django + DRF</li>
+                        <li>CrewAI Framework</li>
+                        <li>Google Gemini</li>
+                        <li>JWT Auth</li>
+                    </ul>
+                </div>
+                <div class="tech-category">
+                    <h3>Data & Storage</h3>
+                    <ul class="tech-list">
+                        <li>MongoDB Atlas</li>
+                        <li>PostgreSQL</li>
+                        <li>Vector Search</li>
+                        <li>Audit Logging</li>
+                    </ul>
+                </div>
+                <div class="tech-category">
+                    <h3>Deployment</h3>
+                    <ul class="tech-list">
+                        <li>Render (Free Tier)</li>
+                        <li>Docker</li>
+                        <li>GitHub Actions</li>
+                        <li>Environment Config</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="use-cases-section">
+        <div class="container">
+            <h2 class="section-title">Industry Applications</h2>
+            <div class="use-cases-grid">
+                <div class="use-case-card">
+                    <h3>🏦 Banking & Finance</h3>
+                    <p>KYC forms, loan applications, account opening documents</p>
+                </div>
+                <div class="use-case-card">
+                    <h3>🏥 Healthcare</h3>
+                    <p>Insurance claims, patient forms, medical records</p>
+                </div>
+                <div class="use-case-card">
+                    <h3>📦 Logistics</h3>
+                    <p>Shipping forms, invoices, customs declarations</p>
+                </div>
+                <div class="use-case-card">
+                    <h3>⚖️ Legal</h3>
+                    <p>Contracts, agreements, compliance documents</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <h2 class="section-title">Try It Now</h2>
+            <div class="demo-content">
+                <div class="demo-info">
+                    <h3>Experience the Power of Agentic AI</h3>
+                    <p>Login with demo credentials and explore the full workflow:</p>
+                    <div class="credentials">
+                        <div class="credential-box">
+                            <strong>Customer Account</strong>
+                            <code>customer_demo / DemoPass123!</code>
+                        </div>
+                        <div class="credential-box">
+                            <strong>Reviewer Account</strong>
+                            <code>reviewer_demo / DemoPass123!</code>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-primary btn-large" id="demo-link">Launch Demo</a>
+                </div>
+                <div class="demo-features">
+                    <h4>What You Can Do:</h4>
+                    <ul>
+                        <li>✓ Upload documents and track processing status</li>
+                        <li>✓ View real-time dashboard with workflow metrics</li>
+                        <li>✓ Review and approve documents with confidence scores</li>
+                        <li>✓ Search documents using semantic queries</li>
+                        <li>✓ Explore complete audit trails</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <circle cx="12" cy="15" r="3"></circle>
+                    </svg>
+                    <span>AgentDoc</span>
+                </div>
+                <p class="footer-tagline">Autonomous Document Intelligence for the Modern Enterprise</p>
+                <div class="footer-links">
+                    <a href="https://github.com" target="_blank">GitHub</a>
+                    <a href="#architecture">Documentation</a>
+                    <a href="#demo">Demo</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- JavaScript Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/animations/hero.js"></script>
+    <script src="js/animations/sections.js"></script>
+    <script src="js/animations/interactions.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

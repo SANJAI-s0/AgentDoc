@@ -1,0 +1,127 @@
+<!-- templates/landing.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgentDoc - Agentic AI Document Intelligence System for Autonomous Workflow Automation">
+    <title>AgentDoc - AI-Powered Document Intelligence</title>
+    <link rel="stylesheet" href="{% static 'landing-css/landing.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <circle cx="12" cy="15" r="3"></circle>
+                </svg>
+                <span class="brand-text">AgentDoc</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#demo">Demo</a></li>
+            </ul>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section (Keep this) -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Intelligent Document Processing<br>Powered by <span class="gradient-text">Agentic AI</span></h1>
+                <p class="hero-subtitle">Automate complex document workflows with autonomous AI agents. Extract, validate, and route documents with precision and speed.</p>
+                <div class="hero-buttons">
+                    <a href="/app" class="btn btn-primary">Try Demo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">99.5%</div>
+                        <div class="stat-label">ACCURACY</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">10x</div>
+                        <div class="stat-label">FASTER PROCESSING</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">COST REDUCTION</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="document-stack">
+                    <div class="doc-card doc-1"></div>
+                    <div class="doc-card doc-2"></div>
+                    <div class="doc-card doc-3"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section (Keep this) -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <h2 class="section-title">Try It Now</h2>
+            <div class="demo-content">
+                <div class="demo-info">
+                    <h3>Experience the Power of Agentic AI</h3>
+                    <p>Login with demo credentials and explore the full workflow:</p>
+                    <div class="credentials">
+                        <div class="credential-box">
+                            <strong>Customer Account</strong>
+                            <code>customer_demo / DemoPass123!</code>
+                        </div>
+                        <div class="credential-box">
+                            <strong>Reviewer Account</strong>
+                            <code>reviewer_demo / DemoPass123!</code>
+                        </div>
+                    </div>
+                    <a href="/app" class="btn btn-primary btn-large">Launch Demo</a>
+                </div>
+                <div class="demo-features">
+                    <h4>What You Can Do:</h4>
+                    <ul>
+                        <li>✓ Upload documents and track processing status</li>
+                        <li>✓ View real-time dashboard with workflow metrics</li>
+                        <li>✓ Review and approve documents with confidence scores</li>
+                        <li>✓ Search documents using semantic queries</li>
+                        <li>✓ Explore complete audit trails</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer (Keep this) -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <circle cx="12" cy="15" r="3"></circle>
+                    </svg>
+                    <span>AgentDoc</span>
+                </div>
+                <p class="footer-tagline">Autonomous Document Intelligence for the Modern Enterprise</p>
+                <div class="footer-links">
+                    <a href="https://github.com" target="_blank">GitHub</a>
+                    <a href="/app">Demo</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="{% static 'landing-js/landing.js' %}"></script>
+</body>
+</html>

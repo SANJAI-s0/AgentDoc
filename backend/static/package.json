@@ -1,0 +1,19 @@
+{
+  "name": "agentdoc-landing",
+  "version": "1.0.0",
+  "description": "AgentDoc Landing Page - Agentic AI Document Intelligence",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "serve": "npx serve .",
+    "lint": "echo 'No linting configured'"
+  },
+  "keywords": [
+    "ai",
+    "document-processing",
+    "ocr",
+    "automation",
+    "landing-page"
+  ],
+  "author": "AgentDoc Team",
+  "license": "MIT"
+}
